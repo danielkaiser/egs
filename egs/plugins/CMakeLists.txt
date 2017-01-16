@@ -1,0 +1,6 @@
+add_subdirectory(cylinder_plugin)
+add_subdirectory(isosurface_plugin)
+add_subdirectory(molecule_plugin)
+add_subdirectory(rendertotexture_plugin)
+add_subdirectory(sphere_plugin)
+add_subdirectory(triangle_plugin)
