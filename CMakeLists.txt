@@ -1,14 +1,12 @@
 cmake_minimum_required(VERSION 3.1.3 FATAL_ERROR)
 
-project(egs VERSION 0.0.1)
-
 set(CMAKE_INSTALL_RPATH "@loader_path/../../lib/egs")
 
 if (EGS_DEBUG)
 	add_definitions(-DDEBUG=1)
 endif()
 
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules)
 
 set(THIRDPARTY_BINARY_DIR "${CMAKE_SOURCE_DIR}/thirdparty/build/${CMAKE_BUILD_TYPE}/")
 include(ThirdpartyHelper)
