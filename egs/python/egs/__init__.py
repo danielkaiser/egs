@@ -3,8 +3,8 @@ import os
 import sys
 import importlib
 from sys import platform as _platform
+import warnings
 
-_egs_imported_modules = {}
 
 if not os.environ.get('EGS_PATH'):
     os.environ['EGS_PATH'] = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -30,20 +30,26 @@ _egs = ctypes.CDLL(os.path.join(os.environ.get('EGS_PATH'), LIB_NAME))
 (DEBUG, WARNING, ERROR) = map(ctypes.c_uint, range(1, 4))
 
 
-def py_loader_callback(ctx, path, plugin_name):
+def _py_loader_callback(ctx, path, plugin_name):
     if path:
-        sys.path.append(path)
+        path_already_in_sys_path = (path in sys.path)
+        if not path_already_in_sys_path:
+            sys.path.append(path)
         try:
             module = importlib.import_module(plugin_name)
-            getattr(module, plugin_name+'_init_plugin')(ctx)
-            _egs_imported_modules[plugin_name] = module
+            getattr(module, plugin_name + '_init_plugin')(ctx)
+            _py_loader_callback.imported_modules[plugin_name] = module
         except (ImportError, AttributeError) as e:
-            print("Module %s could not be loaded!"%(plugin_name))
+            warnings.warn("Plugin {} could not be loaded!".format(plugin_name), 'error')
+        finally:
+            if not path_already_in_sys_path:
+                sys.path.remove(path)
     else:
         try:
-            getattr(_egs_imported_modules[plugin_name], plugin_name+'_terminate_plugin')()
-        except AttributeError:
-            print('Module %s could not be unloaded!'%(plugin_name))
+            getattr(_py_loader_callback.imported_modules[plugin_name], plugin_name + '_terminate_plugin')()
+        except (KeyError, AttributeError) as e:
+            warnings.warn("Plugin {} could not be unloaded!".format(plugin_name), 'error')
+_py_loader_callback.imported_modules = {}
 
 
 def printf(msg, msg_type=DEBUG, end=b"\n"):
@@ -246,7 +252,7 @@ _egs.egs_c_wrapper_register_c_plugin.argtypes = [ctypes.c_char_p, PluginWrapper.
 _egs.egs_c_wrapper_register_c_plugin.restype = None
 
 _egs_py_loader_fun = ctypes.CFUNCTYPE(None, ctypes.POINTER(GLContext), ctypes.c_char_p, ctypes.c_char_p)
-_wrapped_loader_fun = _egs_py_loader_fun(py_loader_callback)
+_wrapped_loader_fun = _egs_py_loader_fun(_py_loader_callback)
 _egs.egs_context_set_py_loader_fun.argtypes = [ctypes.POINTER(Context), _egs_py_loader_fun]
 _egs.egs_context_set_py_loader_fun.restype = None
 _egs.egs_context_rotate.argtypes = [ctypes.POINTER(Context), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
