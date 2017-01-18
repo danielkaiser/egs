@@ -187,15 +187,11 @@ class GLOffscreenRenderer(GLContext, ctypes.Structure):
         return _egs.egs_gloffscreen_get_data(self._gl_ctx_ref)
 
 
-def _empty_destructor(data_len, data, plugin_data):
-    pass
-
-
 class PluginWrapper(ctypes.Structure):
     _fields_ = [("plugin_name", ctypes.c_char_p), ("data_length", ctypes.c_size_t), ("data", ctypes.POINTER(ctypes.c_uint8))]
     apply_fun_callback = ctypes.CFUNCTYPE(None, ctypes.POINTER(GLContext), ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint8), ctypes.c_void_p)
     terminate_fun_callback = ctypes.CFUNCTYPE(None, ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint8), ctypes.c_void_p)
-    empty_terminate_fun = terminate_fun_callback(_empty_destructor)
+    empty_terminate_fun = terminate_fun_callback(lambda *args, **kwargs: None)
 
     def get_display_list_elem(self):
         return _egs.egs_c_wrapper_create(self)
