@@ -1,15 +1,15 @@
 import ctypes
 import sys
 import os
-from egs import DisplayListElem, Context
+from egs import DisplayListElem, Context, LIB_SUFFIX
 
-_rendertotexture_plugin = ctypes.cdll.LoadLibrary(os.path.join(os.environ.get('EGS_PATH'), 'plugins/rendertotexture_plugin/', 'librendertotexture_plugin.so'))
+_rendertotexture_plugin = ctypes.cdll.LoadLibrary(os.path.join(os.environ.get('EGS_PATH'), 'plugins', 'rendertotexture_plugin', 'librendertotexture_plugin.'+LIB_SUFFIX))
 
 
 class Surface:
     def __init__(self, positions):
         flat_positions = [item for position in positions[:] for item in position]
-        self._rendertotexture_ref = _rendertotexture_plugin.rendertotexture_plugin_create_surface(
+        self._rendertotexture_ref = _rendertotexture_plugin.plot_plugin_create_surface(
             (ctypes.c_float * len(flat_positions))(*flat_positions))
 
     #def apply(self, ctx, data_ptr):
@@ -19,6 +19,6 @@ class Surface:
     def display_list_elem_ref(self):
         return self._rendertotexture_ref
 
-_rendertotexture_plugin.rendertotexture_plugin_create_surface.argtypes = [ctypes.POINTER(ctypes.c_float)]
-_rendertotexture_plugin.rendertotexture_plugin_create_surface.restype = ctypes.POINTER(DisplayListElem)
+_rendertotexture_plugin.plot_plugin_create_surface.argtypes = [ctypes.POINTER(ctypes.c_float)]
+_rendertotexture_plugin.plot_plugin_create_surface.restype = ctypes.POINTER(DisplayListElem)
 #_sphere_plugin.sphere_apply.argtypes = [ctypes.POINTER(Context), ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint8), ctypes.c_void_p]
