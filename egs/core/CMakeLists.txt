@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.1.3 FATAL_ERROR)
 
 project(egs VERSION 0.0.1)
 
-SET(CMAKE_INSTALL_RPATH "@loader_path/../../lib/egs")
-
 set(SOURCE_FILES
 	c_wrapper_dle.cxx
 	compile_shader.cxx

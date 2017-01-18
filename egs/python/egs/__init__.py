@@ -7,7 +7,7 @@ from sys import platform as _platform
 _egs_imported_modules = {}
 
 if not os.environ.get('EGS_PATH'):
-    os.environ['EGS_PATH'] = os.path.join(os.path.dirname(__file__), os.path.abspath(".."))
+    os.environ['EGS_PATH'] = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 os.environ["DYLD_LIBRARY_PATH"] = os.environ.get('DYLD_LIBRARY_PATH', '') + ":" + os.path.abspath("../")
 os.environ["LD_LIBRARY_PATH"] = os.environ.get('LD_LIBRARY_PATH', '') + ":" + os.path.abspath("../")
