@@ -17,24 +17,23 @@ import sys
 import os
 from sys import platform as _platform
 
-from egs import DisplayListElem, Context
-
-LIB_SUFFIX = 'so'
-if _platform == "darwin":
-    LIB_SUFFIX = 'dylib'
+from egs import DisplayListElem, Context, GLContext, LIB_SUFFIX
 
 LIB_NAME = 'libcallback_plugin.'+LIB_SUFFIX
 
-_callback_plugin = ctypes.cdll.LoadLibrary(os.path.join(os.environ.get('EGS_PATH'), 'plugins/callback_plugin/', LIB_NAME))
+_callback_plugin = ctypes.cdll.LoadLibrary(os.path.join(os.environ.get('EGS_PATH'), 'plugins', 'callback_plugin', LIB_NAME))
 
 
 class Callback:
-    _ctypes_callback_type = ctypes.CFUNCTYPE(None, [ctypes.c_void_p, ctypes.c_void_p])
+    _ctypes_callback_type = ctypes.CFUNCTYPE(None, [ctypes.POINTER(GLContext), ctypes.c_void_p])
 
     def __init__(self, callback, ctx=None):
         def wrapped_callback(egs_gl_context_ptr, user_data_ptr):
             assert not user_data_ptr
-            callback(egs_gl_context_ptr)
+            egs_gl_context = None
+            if egs_gl_context_ptr:
+                egs_gl_context = egs_gl_context_ptr.value
+            callback(egs_gl_context)
 
         # ctypes callback as attribute to prevent early garbage collection
         self._ctypes_callback = Callback._ctypes_callback_type(wrapped_callback)
