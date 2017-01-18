@@ -3,8 +3,8 @@
 Callback Plugin for executing generic functions at draw time
 
 This plugin allows the user to register a callback function (or any other type
-of callable), so that it will be whenever the corresponding display list is
-executed. This can be used by applications for the ad-hoc creation of custom
+of callable), so that it will be executed whenever the corresponding display
+list is executed. This can be used by applications for the ad-hoc creation of custom
 display list items, without the need to create a complete plugin.
 
 >>> import callback_plugin
@@ -25,14 +25,14 @@ _callback_plugin = ctypes.cdll.LoadLibrary(os.path.join(os.environ.get('EGS_PATH
 
 
 class Callback:
-    _ctypes_callback_type = ctypes.CFUNCTYPE(None, [ctypes.POINTER(GLContext), ctypes.c_void_p])
+    _ctypes_callback_type = ctypes.CFUNCTYPE(None, ctypes.POINTER(GLContext), ctypes.c_void_p)
 
     def __init__(self, callback, ctx=None):
         def wrapped_callback(egs_gl_context_ptr, user_data_ptr):
             assert not user_data_ptr
             egs_gl_context = None
             if egs_gl_context_ptr:
-                egs_gl_context = egs_gl_context_ptr.value
+                egs_gl_context = egs_gl_context_ptr[0]
             callback(egs_gl_context)
 
         # ctypes callback as attribute to prevent early garbage collection

@@ -5,8 +5,8 @@
  *
  * This plugin allows the user to register a callback function, so that it
  * will be called whenever the corresponding display list is executed. This can
- * be used by applications for the ad-hoc creation of custom display list items,
- * without the need to create a complete plugin.
+ * be used by applications for the ad-hoc creation of custom display list
+ * items, without the need to create a complete plugin.
  *
  * Note: This plugin offers no memory management. In addition to the callback,
  * a void pointer can be passed to callback_plugin_create_callback. When the
