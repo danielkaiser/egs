@@ -210,41 +210,56 @@ class PluginWrapper(ctypes.Structure):
 _egs.egs_context_create.argtypes = []
 _egs.egs_context_create.restype = ctypes.POINTER(Context)
 _egs.egs_context_destroy.argtypes = [ctypes.POINTER(Context)]
+_egs.egs_context_destroy.restype = None
 _egs.egs_context_load_plugin.argtypes = [ctypes.POINTER(Context), ctypes.c_char_p]
+_egs.egs_context_load_plugin.restype = None
 
 _egs.egs_display_list_create.argtypes = []
 _egs.egs_display_list_create.restype = ctypes.POINTER(DisplayList)
 _egs.egs_display_list_add_element.argtypes = [ctypes.POINTER(DisplayList), ctypes.POINTER(DisplayListElem)]
+_egs.egs_display_list_add_element.restype = None
 _egs.egs_display_list_element_apply.argtypes = [ctypes.POINTER(DisplayListElem), ctypes.POINTER(GLContext)]
+_egs.egs_display_list_element_apply.restype = None
 _egs.egs_display_list_destroy.argtypes = [ctypes.POINTER(DisplayList)]
+_egs.egs_display_list_destroy.restype = None
 
 _egs.egs_glfw_context_create.argtypes = [ctypes.POINTER(Context)]
 _egs.egs_glfw_context_create.restype = ctypes.POINTER(GLFWContext)
 _egs.egs_glfw_context_destroy.argtypes = [ctypes.POINTER(GLFWContext)]
+_egs.egs_glfw_context_destroy.restype = None
 
 _egs.egs_glip_glfw_context_create.argtypes = [ctypes.POINTER(Context)]
 _egs.egs_glip_glfw_context_create.restype = ctypes.POINTER(GLIPGLFWContext)
 _egs.egs_glip_glfw_context_destroy.argtypes = [ctypes.POINTER(GLIPGLFWContext)]
+_egs.egs_glip_glfw_context_destroy.restype = None
 
 _egs.egs_gloffscreen_context_create.argtypes = [ctypes.POINTER(Context)]
 _egs.egs_gloffscreen_context_create.restype = ctypes.POINTER(GLOffscreenRenderer)
 _egs.egs_gloffscreen_context_destroy.argtypes = [ctypes.POINTER(GLOffscreenRenderer)]
+_egs.egs_gloffscreen_context_destroy.restype = None
 _egs.egs_gloffscreen_get_data.argtypes = []
 _egs.egs_gloffscreen_get_data.restype = ctypes.POINTER(ctypes.c_int)
 
 _egs.egs_c_wrapper_create.argtypes = [PluginWrapper]
 _egs.egs_c_wrapper_create.restype = ctypes.POINTER(DisplayListElem)
 _egs.egs_c_wrapper_register_c_plugin.argtypes = [ctypes.c_char_p, PluginWrapper.apply_fun_callback, PluginWrapper.terminate_fun_callback]
+_egs.egs_c_wrapper_register_c_plugin.restype = None
 
 _egs_py_loader_fun = ctypes.CFUNCTYPE(None, ctypes.POINTER(GLContext), ctypes.c_char_p, ctypes.c_char_p)
 _wrapped_loader_fun = _egs_py_loader_fun(py_loader_callback)
 _egs.egs_context_set_py_loader_fun.argtypes = [ctypes.POINTER(Context), _egs_py_loader_fun]
+_egs.egs_context_set_py_loader_fun.restype = None
 _egs.egs_context_rotate.argtypes = [ctypes.POINTER(Context), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
+_egs.egs_context_rotate.restype = None
 _egs.egs_context_set_property.argtypes = [ctypes.POINTER(Context), ctypes.c_char_p, ctypes.c_void_p, ctypes.c_size_t]
+_egs.egs_context_set_property.restype = None
 _egs.egs_context_get_property.argtypes = [ctypes.POINTER(Context), ctypes.c_char_p, ctypes.c_void_p, ctypes.c_size_t]
 _egs.egs_context_get_property.restype = ctypes.c_void_p
 _egs.egs_context_register_py_plugin_function.argtypes = [ctypes.POINTER(Context), ctypes.c_char_p, ctypes.c_char_p, ctypes.c_void_p]
+_egs.egs_context_register_py_plugin_function.restype = None
 
 _egs.egs_gl_context_update.argtypes = [ctypes.POINTER(GLContext), ctypes.POINTER(DisplayList)]
+_egs.egs_gl_context_update.restype = ctypes.c_int
 
 _egs.egs_printf.argtypes = [ctypes.c_uint, ctypes.c_char_p]
+_egs.egs_printf.restype = None
