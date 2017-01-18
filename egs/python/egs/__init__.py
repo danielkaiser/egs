@@ -2,32 +2,26 @@ import ctypes
 import os
 import sys
 import importlib
-from sys import platform as _platform
 import warnings
 
 
 if not os.environ.get('EGS_PATH'):
     os.environ['EGS_PATH'] = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-os.environ["DYLD_LIBRARY_PATH"] = os.environ.get('DYLD_LIBRARY_PATH', '') + ":" + os.path.abspath("../")
-os.environ["LD_LIBRARY_PATH"] = os.environ.get('LD_LIBRARY_PATH', '') + ":" + os.path.abspath("../")
-
-_plugins = os.listdir(os.path.join(os.environ['EGS_PATH'], 'plugins'))
-for plugin in _plugins:
-    plugin_path = os.path.join(os.environ['EGS_PATH'], 'plugins', plugin)
-    if os.path.isdir(plugin_path):
-        sys.path.append(plugin_path)
-
-LIB_SUFFIX = 'so'
-if _platform == "darwin":
+if sys.platform == 'darwin':
+    LIB_PATH_ENV_VAR = 'DYLD_LIBRARY_PATH'
     LIB_SUFFIX = 'dylib'
+else:
+    LIB_PATH_ENV_VAR = 'LD_LIBRARY_PATH'
+    LIB_SUFFIX = 'so'
 
-LIB_NAME = 'libegs.'+LIB_SUFFIX
+_lib_paths = os.environ.get(LIB_PATH_ENV_VAR, '').split(':')
+_lib_paths.append(os.path.abspath("../"))
+os.environ[LIB_PATH_ENV_VAR] = ':'.join(_lib_paths)
 
-_egs = ctypes.CDLL(os.path.join(os.environ.get('EGS_PATH'), LIB_NAME))
+_egs = ctypes.CDLL(os.path.join(os.environ.get('EGS_PATH'), 'libegs.' + LIB_SUFFIX))
 
-
-(DEBUG, WARNING, ERROR) = map(ctypes.c_uint, range(1, 4))
+DEBUG, WARNING, ERROR = (ctypes.c_uint for c in range(1, 4))
 
 
 def _py_loader_callback(ctx, path, plugin_name):
