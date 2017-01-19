@@ -34,7 +34,7 @@ def _py_loader_callback(ctx, path, plugin_name):
             getattr(module, plugin_name + '_init_plugin')(ctx)
             _py_loader_callback.imported_modules[plugin_name] = module
         except (ImportError, AttributeError) as e:
-            warnings.warn("Plugin {} could not be loaded!".format(plugin_name), 'error')
+            warnings.warn("Plugin {} could not be loaded!".format(plugin_name))
         finally:
             if not path_already_in_sys_path:
                 sys.path.remove(path)
@@ -42,7 +42,7 @@ def _py_loader_callback(ctx, path, plugin_name):
         try:
             getattr(_py_loader_callback.imported_modules[plugin_name], plugin_name + '_terminate_plugin')()
         except (KeyError, AttributeError) as e:
-            warnings.warn("Plugin {} could not be unloaded!".format(plugin_name), 'error')
+            warnings.warn("Plugin {} could not be unloaded!".format(plugin_name))
 _py_loader_callback.imported_modules = {}
 
 
