@@ -9,26 +9,32 @@ externalproject_add(glfw
         CMAKE_ARGS "-DBUILD_SHARED_LIBS=ON;-DGLFW_BUILD_EXAMPLES=OFF;-DGLFW_BUILD_TESTS=OFF;-DGLFW_BUILD_DOCS=OFF;-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX};-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
 )
 
-externalproject_add(zeromq
+if (NOT SKIP_ZEROMQ)
+    externalproject_add(zeromq
         URL https://github.com/zeromq/libzmq/archive/v4.2.1.tar.gz
         URL_HASH MD5=4eed208abf0d8202359ad760a1ac03b2
         PREFIX "${CMAKE_BINARY_DIR}/thirdparty/"
         CMAKE_ARGS "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=1;-DCMAKE_MACOSX_RPATH=ON;-DCMAKE_OSX_DEPLOYMENT_TARGET=10.9;-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX};-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE};-DBUILD_SHARED_LIBS=1;-DZMQ_BUILD_TESTS=OFF;-DZMQ_BUILD_FRAMEWORK=OFF"
-)
+    )
+endif()
 
-externalproject_add(zlib
+if (NOT SKIP_ZLIB)
+    externalproject_add(zlib
         URL http://zlib.net/zlib-1.2.11.tar.gz
         URL_HASH MD5=1c9f62f0778697a09d36121ead88e08e
         PREFIX "${CMAKE_BINARY_DIR}/thirdparty/"
         CMAKE_ARGS "${zlib_CMAKE_ARGS};-DCMAKE_PREFIX_PATH=${CMAKE_INSTALL_PREFIX};-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX};-DBUILD_SHARED_LIBS=OFF;-DCMAKE_MACOSX_RPATH=ON;-DCMAKE_POSITION_INDEPENDENT_CODE=ON;"
-        )
+    )
+endif()
 
-externalproject_add(libpng
+if (NOT SKIP_LIBPNG)
+    externalproject_add(libpng
         URL http://download.sourceforge.net/libpng/libpng-1.6.28.tar.gz
         URL_HASH MD5=897ccec1ebfb0922e83c2bfaa1be8748
         DEPENDS zlib
         CMAKE_ARGS "${libpng_CMAKE_ARGS};-DCMAKE_PREFIX_PATH=${CMAKE_INSTALL_PREFIX};-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX};-DPNG_SHARED=OFF;-DPNG_STATIC=ON;-DCMAKE_POSITION_INDEPENDENT_CODE=ON;"
-        )
+    )
+endif()
 
 
 externalproject_add(googletest
