@@ -1,5 +1,5 @@
 import egs
-from molecule_plugin import Molecule
+from egs.plugins.molecule_plugin import Molecule
 
 context = egs.Context()
 glfw_context = egs.GLIPGLFWContext(context)
