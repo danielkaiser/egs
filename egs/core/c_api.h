@@ -28,6 +28,7 @@ typedef struct egs_display_list_elem_wrapper *egs_display_list_elem_ref;
 
 egs_display_list_ref egs_display_list_create();
 void egs_display_list_add_element(egs_display_list_ref, egs_display_list_elem_ref);
+void egs_display_list_remove_element(egs_display_list_ref, egs_display_list_elem_ref);
 void egs_display_list_element_apply(egs_display_list_elem_ref, egs_gl_context_ref);
 void egs_display_list_element_terminate(egs_display_list_elem_ref);
 void egs_display_list_destroy(egs_display_list_ref);

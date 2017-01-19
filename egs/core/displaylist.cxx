@@ -43,6 +43,11 @@ void egs_display_list_add_element(egs_display_list_ref dl, egs_display_list_elem
   reinterpret_cast<DisplayList *>(dl)->add(tmp);
 }
 
+void egs_display_list_remove_element(egs_display_list_ref dl, egs_display_list_elem_ref elem) {
+  auto tmp = std::shared_ptr<IDisplayListElement>(reinterpret_cast<IDisplayListElement*>(elem));
+  reinterpret_cast<DisplayList *>(dl)->remove(tmp);
+}
+
 template<typename T>
 void PropertySetterDisplayListElement<T>::apply(GLContext &ctx) {
   ctx.set_property<T>(name, value);

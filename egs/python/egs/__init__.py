@@ -21,7 +21,7 @@ os.environ[LIB_PATH_ENV_VAR] = ':'.join(_lib_paths)
 
 _egs = ctypes.CDLL(os.path.join(os.environ.get('EGS_PATH'), 'libegs.' + LIB_SUFFIX))
 
-DEBUG, WARNING, ERROR = (ctypes.c_uint for c in range(1, 4))
+DEBUG, WARNING, ERROR = (ctypes.c_uint(c) for c in range(1, 4))
 
 
 def _py_loader_callback(ctx, path, plugin_name):
@@ -47,7 +47,8 @@ _py_loader_callback.imported_modules = {}
 
 
 def printf(msg, msg_type=DEBUG, end=b"\n"):
-    _egs.egs_printf(msg_type, msg+end)
+    msg += end
+    _egs.egs_printf(msg_type, ctypes.c_char_p(msg))
 
 
 class DisplayListElem(ctypes.Structure):
@@ -64,13 +65,20 @@ class DisplayList(ctypes.Structure):
     def __init__(self, dl_ref=None):
         super(DisplayList, self).__init__()
         self._dl_ref = _egs.egs_display_list_create()
+        self._dl_elements = []
 
     def __del__(self):
         if self._dl_ref:
             _egs.egs_display_list_destroy(self._dl_ref)
 
     def add(self, dl_elem):
+        self._dl_elements.append(dl_elem)
         _egs.egs_display_list_add_element(self._dl_ref, dl_elem.display_list_elem_ref)
+
+    def remove(self, dl_elem):
+        _egs.egs_display_list_remove_element(self._dl_ref, dl_elem.display_list_elem_ref)
+        if dl_elem in self._dl_elements:
+            self._dl_elements.remove(dl_elem)
 
     @property
     def display_list_ref(self):
@@ -214,6 +222,8 @@ _egs.egs_display_list_create.argtypes = []
 _egs.egs_display_list_create.restype = ctypes.POINTER(DisplayList)
 _egs.egs_display_list_add_element.argtypes = [ctypes.POINTER(DisplayList), ctypes.POINTER(DisplayListElem)]
 _egs.egs_display_list_add_element.restype = None
+_egs.egs_display_list_remove_element.argtypes = [ctypes.POINTER(DisplayList), ctypes.POINTER(DisplayListElem)]
+_egs.egs_display_list_remove_element.restype = None
 _egs.egs_display_list_element_apply.argtypes = [ctypes.POINTER(DisplayListElem), ctypes.POINTER(GLContext)]
 _egs.egs_display_list_element_apply.restype = None
 _egs.egs_display_list_destroy.argtypes = [ctypes.POINTER(DisplayList)]
