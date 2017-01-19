@@ -21,7 +21,7 @@ set(HEADER_FILES
 
 add_library(${PROJECT_NAME} ${SOURCE_FILES})
 
-target_link_libraries(${PROJECT_NAME} zmq)
+target_link_libraries(${PROJECT_NAME} zeromq)
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../thirdparty/build/prefix/include/)
 
