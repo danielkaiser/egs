@@ -44,7 +44,7 @@ private:
   
   class CDataProperty : public IProperty {
   public:
-    CDataProperty(void *ptr, size_t size) : _value((unsigned char *)ptr, ((unsigned char *)ptr)+size) {}
+    CDataProperty(void *ptr, size_t size);
     std::vector<unsigned char> _value;
     void *data() {
       return _value.data();

@@ -26,7 +26,7 @@ install: build/Makefile
 	cd build && $(MAKE) install
 
 debug: EXTRA_CMAKE_FLAGS += -DEGS_DEBUG=ON -DGLIP_DEBUG=ON
-debug: install
+debug: all install
 
 thirdparty/cmake/cmake-src.tar.gz:
 	@if [ "$(DEFAULT_CMAKE)" == "" ]; then \
@@ -51,6 +51,7 @@ clean:
 	rm -rf thirdparty/cmake
 	rm -rf thirdparty/build
 	rm -rf build
+	rm -rf cmake-build-debug
 
 .PHONY: clean debug all
 

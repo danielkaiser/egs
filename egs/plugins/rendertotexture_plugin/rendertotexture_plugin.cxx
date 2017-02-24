@@ -15,6 +15,9 @@ RenderToTexturePlugin::Plot::~Plot() {
   glDeleteFramebuffers(1, &framebuffer);
   glDeleteTextures(1, &render_texture);
   egs_printf(EGS_DEBUG, "plot destructor\n");
+  for (auto ctx : registered_gl_contexts) {
+    delete_handler(*ctx);
+  }
 }
 
 void RenderToTexturePlugin::Plot::apply(GLContext& ctx) {
@@ -65,6 +68,10 @@ void RenderToTexturePlugin::Plot::apply(GLContext& ctx) {
   assert(!glGetError());
 }
 
+void RenderToTexturePlugin::Plot::delete_handler(GLContext& ctx) {
+  egs_printf(EGS_DEBUG, "plot delete handler called\n");
+}
+
 /*********************************************************************************/
 
 RenderToTexturePlugin::Surface::Surface(glm::vec3 position, glm::vec3 width, glm::vec3 height) {
@@ -81,6 +88,9 @@ RenderToTexturePlugin::Surface::~Surface() {
   glDeleteBuffers(1, &vbo);
   glDeleteVertexArrays(1, &vao);
   egs_printf(EGS_DEBUG, "surface destructor\n");
+  for (auto ctx : registered_gl_contexts) {
+    delete_handler(*ctx);
+  }
 }
 
 void RenderToTexturePlugin::Surface::apply(GLContext& ctx) {
@@ -120,6 +130,10 @@ void RenderToTexturePlugin::Surface::apply(GLContext& ctx) {
   glUniformMatrix4fv(glGetUniformLocation(shader_prog, "projection"), 1, GL_FALSE, &ctx.get_context().get_property<glm::mat4>("projection")[0].x);
   glDrawArrays(GL_TRIANGLES, 0, 2*3);
   glEnable(GL_CULL_FACE);
+}
+
+void RenderToTexturePlugin::Surface::delete_handler(GLContext& ctx) {
+  egs_printf(EGS_DEBUG, "surface delete handler called\n");
 }
 
 egs_display_list_elem_ref plot_plugin_create_surface(egs_context_ref ctx, float *positions) {

@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <set>
 #include "c_api.h"
 
 class Context;
@@ -12,8 +13,16 @@ class GLContext;
 
 class IDisplayListElement : public std::enable_shared_from_this<IDisplayListElement> {
 public:
-  virtual ~IDisplayListElement() {}
+  virtual ~IDisplayListElement();
   virtual void apply(GLContext &ctx) = 0;
+
+  void delete_function(GLContext &ctx);
+
+  void register_delete_handler(GLContext &ctx);
+  void unregister_delete_handler(GLContext &ctx);
+protected:
+  virtual void delete_handler(GLContext &ctx) = 0;
+  std::set<GLContext*> registered_gl_contexts;
 };
 
 typedef std::unique_ptr<IDisplayListElement>(*deserializer_type)(const std::vector<uint8_t>::const_iterator& data, const std::vector<uint8_t>::const_iterator& data_end, Context &ctx);
@@ -22,6 +31,7 @@ typedef std::unique_ptr<IDisplayListElement>(*deserializer_type)(const std::vect
 class DisplayList : public IDisplayListElement {
 public:
   virtual void apply(GLContext &ctx);
+  virtual void delete_handler(GLContext &ctx) {}
   size_t size() {return display_list.size();}
   void remove(std::shared_ptr<IDisplayListElement> elem);
   

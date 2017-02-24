@@ -11,11 +11,18 @@ CallbackPlugin::Callback::Callback(const callback_type& callback) : m_callback(c
 }
 
 CallbackPlugin::Callback::~Callback() {
+  for (auto ctx : registered_gl_contexts) {
+    delete_handler(*ctx);
+  }
 }
 
 void CallbackPlugin::Callback::apply(GLContext& ctx) {
   (void)ctx;
   m_callback(ctx);
+}
+
+void CallbackPlugin::Callback::delete_handler(GLContext& ctx) {
+  egs_printf(EGS_DEBUG, "callback delete handler called\n");
 }
 
 egs_display_list_elem_ref callback_plugin_create_callback(egs_context_ref ctx, void (*callback)(egs_gl_context_ref ctx, void *user_data), void *user_data) {

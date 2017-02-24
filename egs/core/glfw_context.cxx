@@ -14,6 +14,8 @@
 #include <memory>
 #include <unistd.h>
 
+unsigned int GLFWContext::window_count = 0;
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
   (void) scancode;
   (void) mods;
@@ -47,14 +49,16 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-  static glm::vec3 pos_old;
+  static glm::vec3 pos_old = {0, 0, 0};
   int width, height;
   glfwGetWindowSize(window, &width, &height);
   glm::vec3 pos_new(xpos/width, ypos/-height, 0);
   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) && pos_old != pos_new) {
-    auto d = pos_new - pos_old;
+    glm::vec3 d(pos_new.y - pos_old.y, - pos_new.x + pos_old.x, 0);
     double len = glm::length(d);
-    static_cast<GLFWContext*>(glfwGetWindowUserPointer(window))->rotate(glm::normalize(glm::cross(d, glm::vec3(0,0,1))), len);
+    if (len > 0) {
+      static_cast<GLFWContext*>(glfwGetWindowUserPointer(window))->rotate(glm::normalize(d), len);
+    }
   }
   pos_old = pos_new;
 }
@@ -89,6 +93,7 @@ GLFWContext::GLFWContext(Context &ctx) : GLContext(ctx) {
 
   glfwWindowHint(GLFW_SAMPLES, 4);
   window = glfwCreateWindow(600, 600, "EGS", 0, 0);
+  window_count++;
 
   if (!window) {
     std::cerr << "Error while creating window" << std::endl;
@@ -108,7 +113,6 @@ GLFWContext::GLFWContext(Context &ctx) : GLContext(ctx) {
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
 }
 
 bool GLFWContext::update(std::shared_ptr<DisplayList> display_list) {
@@ -130,7 +134,9 @@ GLFWContext::~GLFWContext() {
   if (window) {
     glfwDestroyWindow(window);
   }
-  glfwTerminate();
+  if ((--window_count) == 0) {
+    glfwTerminate();
+  }
 }
 
 egs_glfw_context_ref egs_glfw_context_create(egs_context_ref ctx_ref) {

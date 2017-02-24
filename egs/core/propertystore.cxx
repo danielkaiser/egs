@@ -23,3 +23,11 @@ void* PropertyStore::get_ptr(const std::string& name, void* default_value, size_
   assert(iproperty->size() == size);
   return iproperty->data();
 }
+
+PropertyStore::CDataProperty::CDataProperty(void *ptr, size_t size) {
+  if (ptr) {
+    _value = std::vector<unsigned char>((unsigned char *)ptr, ((unsigned char *)ptr)+size);
+  } else {
+    _value = std::vector<unsigned char>(size);
+  }
+};

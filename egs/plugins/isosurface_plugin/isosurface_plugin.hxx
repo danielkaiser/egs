@@ -25,6 +25,7 @@ namespace IsosurfacePlugin {
                                                                           x_range(x_range), y_range(y_range), z_range(z_range){}
     ~Isosurface();
     virtual void apply(GLContext& ctx);
+    virtual void delete_handler(GLContext& ctx);
 
   private:
     std::vector<float> x_values;

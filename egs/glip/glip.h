@@ -16,7 +16,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  typedef enum {GLIP_STATE_OK=0x0, GLIP_STATE_SEND_ERROR=0x1, GLIP_STATE_RECV_ERROR=0x2} glip_state_t;
+  typedef enum {GLIP_STATE_OK=0x0, GLIP_STATE_SEND_ERROR=0x1, GLIP_STATE_RECV_ERROR=0x2, GLIP_STATE_TERMINATE=0x3} glip_state_t;
 
   typedef struct {
     void *zmq_context;

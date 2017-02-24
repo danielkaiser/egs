@@ -123,14 +123,6 @@ GLOffscreenRenderer::GLOffscreenRenderer(Context &ctx) : GLContext(ctx) {
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 
-  this->set_perspective(45.0, 1.0);
-  glm::vec3 camera_position = {0, 0, 10};
-  glm::vec3 camera_center = {0, 0, 0};
-  glm::vec3 camera_up = {0, 1, 0};
-  ctx.set_property("camera_position", camera_position);
-  ctx.set_property("camera_center", camera_center);
-  ctx.set_property("camera_up", camera_up);
-  ctx.set_property("view_matrix", glm::lookAt(camera_position, camera_center, camera_up));
   glViewport(0, 0, width, height);
 
   pixels = (int *)malloc(width*height*sizeof(int));

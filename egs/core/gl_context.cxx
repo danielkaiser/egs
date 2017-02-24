@@ -1,60 +1,69 @@
-#define GLM_FORCE_SWIZZLE
 #include "gl_context.hxx"
 #include <glm/gtx/transform.hpp>
 #include "glip.h"
 #include <iostream>
 #include <png.h>
 
+GLContext::GLContext(Context &_ctx): ctx(_ctx) {
+  // ctx.register_gl_context(std::shared_ptr<GLContext>(this));
+}
+
+GLContext::~GLContext() {
+  //ctx.unregister_gl_context(std::shared_ptr<GLContext>(this));
+  for (std::function<void(GLContext &)> f : on_delete_handler) {
+    f(*this);
+  }
+}
+
 void GLContext::rotate(glm::vec3 axis, float angle) {
-  auto camera_position = ctx.get_property<glm::vec3>("camera_position");
-  auto camera_center = ctx.get_property<glm::vec3>("camera_center");
-  auto camera_up = ctx.get_property<glm::vec3>("camera_up");
+  auto camera_position = get_property<glm::vec3>("camera_position");
+  auto camera_center = get_property<glm::vec3>("camera_center");
+  auto camera_up = get_property<glm::vec3>("camera_up");
   auto camera_forward = camera_center-camera_position;
   auto camera_right = glm::normalize(glm::cross(camera_forward, camera_up));
-
   axis = axis.x * camera_right + axis.y * camera_up + axis.z * camera_forward;
-  camera_position = (glm::rotate(angle, axis)*glm::vec4(camera_position, 1)).xyz();
+  camera_position = glm::vec3(glm::rotate(angle, axis)*glm::vec4(camera_position, 1));
   camera_up = glm::normalize(glm::cross(camera_right, camera_center-camera_position));
-  ctx.set_property("camera_position", camera_position);
-  ctx.set_property("camera_center", camera_center);
-  ctx.set_property("camera_up", camera_up);
-  ctx.set_property("view_matrix", glm::lookAt(camera_position, camera_center, camera_up));
+  set_property("camera_position", camera_position);
+  set_property("camera_center", camera_center);
+  set_property("camera_up", camera_up);
+  set_property("view_matrix", glm::lookAt(camera_position, camera_center, camera_up));
 }
 
 void GLContext::translate(glm::vec3 dir) {
-  auto camera_position = ctx.get_property<glm::vec3>("camera_position");
-  auto camera_center = ctx.get_property<glm::vec3>("camera_center");
-  auto camera_up = ctx.get_property<glm::vec3>("camera_up");
+  auto camera_position = get_property<glm::vec3>("camera_position");
+  auto camera_center = get_property<glm::vec3>("camera_center");
+  auto camera_up = get_property<glm::vec3>("camera_up");
   auto camera_forward = camera_center-camera_position;
   auto camera_right = glm::normalize(glm::cross(camera_forward, camera_up));
   dir = dir.x * camera_right + dir.y * camera_up + dir.z * camera_forward;
   camera_center += dir;
   camera_position += dir;
-  ctx.set_property("camera_position", camera_position);
-  ctx.set_property("camera_center", camera_center);
+  set_property("camera_position", camera_position);
+  set_property("camera_center", camera_center);
   auto view_matrix = glm::lookAt(camera_position, camera_center, camera_up);
-  ctx.set_property("view_matrix", view_matrix);
+  set_property("view_matrix", view_matrix);
 }
 
 void GLContext::zoom(float f) {
-  auto camera_position = ctx.get_property<glm::vec3>("camera_position");
-  auto camera_center = ctx.get_property<glm::vec3>("camera_center");
-  auto camera_up = ctx.get_property<glm::vec3>("camera_up");
+  auto camera_position = get_property<glm::vec3>("camera_position");
+  auto camera_center = get_property<glm::vec3>("camera_center");
+  auto camera_up = get_property<glm::vec3>("camera_up");
   camera_position = (camera_position - camera_center)*f + camera_center;
-  ctx.set_property("camera_position", camera_position);
-  ctx.set_property("view_matrix", glm::lookAt(camera_position, camera_center, camera_up));
+  set_property("camera_position", camera_position);
+  set_property("view_matrix", glm::lookAt(camera_position, camera_center, camera_up));
 }
 
 void GLContext::set_perspective(float fovy, float aspect, float znear, float zfar) {
-  ctx.set_property<glm::mat4>("projection", glm::perspective(fovy, aspect, znear, zfar));
+  set_property<glm::mat4>("projection", glm::perspective(fovy, aspect, znear, zfar));
 }
 
-GLContext::GLContext(Context &_ctx): ctx(_ctx) {
- // ctx.register_gl_context(std::shared_ptr<GLContext>(this));
+void GLContext::register_on_delete_handler(const std::function<void(GLContext &)>& func) {
+  on_delete_handler.insert(func);
 }
 
-GLContext::~GLContext() {
-  //ctx.unregister_gl_context(std::shared_ptr<GLContext>(this));
+void GLContext::unregister_on_delete_handler(const std::function<void(GLContext &)>& func) {
+  on_delete_handler.erase(func);
 }
 
 int GLContext::draw_png(std::string filename, int width, int height) {
@@ -138,6 +147,9 @@ void GLContext::set_property_ptr(const std::string& name, void* value, size_t si
 }
 
 void *GLContext::get_property_ptr(const std::string& name, void *default_val, size_t size) {
+  if (!property_store.contains(name)) {
+    return this->ctx.get_property_ptr(name, default_val, size);
+  }
   return this->property_store.get_ptr(name, default_val, size);
 }
 
@@ -151,14 +163,6 @@ void *egs_gl_context_get_property(egs_gl_context_ref ctx, const char *name, void
 
 egs_context_ref egs_gl_context_get_context(egs_gl_context_ref ctx) {
   return reinterpret_cast<egs_context_ref>(&reinterpret_cast<GLContext *>(ctx)->get_context());
-}
-
-void egs_display_list_element_apply(egs_display_list_elem_ref dl, egs_gl_context_ref ctx) {
-  reinterpret_cast<IDisplayListElement *>(dl)->apply(*reinterpret_cast<GLContext *>(ctx));
-}
-
-void egs_display_list_element_terminate(egs_display_list_elem_ref dl) {
-  reinterpret_cast<IDisplayListElement *>(dl)->~IDisplayListElement();
 }
 
 int egs_gl_context_update(egs_gl_context_ref gl_ctx, egs_display_list_ref dl_ref) {

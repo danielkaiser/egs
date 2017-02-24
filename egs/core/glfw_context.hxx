@@ -21,6 +21,7 @@ public:
 
   virtual bool update(std::shared_ptr<DisplayList>);
 private:
+  static unsigned int window_count;
   GLFWwindow *window = nullptr;
 };
 

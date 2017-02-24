@@ -14,7 +14,7 @@ typedef struct {
   GLuint vao, vbo, ibo, instance_buffer;
 } sphere_instance_t;
 
-void sphere_apply(egs_gl_context_ref ctx, const size_t data_length, const uint8_t *data, c_property* instance_data) {
+void sphere_apply(egs_gl_context_ref ctx, const size_t data_length, const uint8_t *data, c_property* instance_data, c_property* per_context_instance_data) {
   assert(data_length % (7*sizeof(float)) == 0);
 
   GLint shader_prog = -1;
@@ -32,9 +32,9 @@ void sphere_apply(egs_gl_context_ref ctx, const size_t data_length, const uint8_
   GLuint *indices;
   int n_vert, n_elem;
 
-  if (!*instance_data) {
-    *instance_data = (c_property)malloc(sizeof(sphere_instance_t));
-    sphere_instance_t* sphere_instance = (sphere_instance_t*)instance_data;
+  if (!*per_context_instance_data) {
+    *per_context_instance_data = (c_property)malloc(sizeof(sphere_instance_t));
+    sphere_instance_t* sphere_instance = (sphere_instance_t*)*per_context_instance_data;
     assert(glGetError() == 0);
     glGenBuffers(1, &sphere_instance->vbo);
     glGenBuffers(1, &sphere_instance->ibo);
@@ -68,18 +68,16 @@ void sphere_apply(egs_gl_context_ref ctx, const size_t data_length, const uint8_
     glBufferData(GL_ARRAY_BUFFER, data_length, (void*)data, GL_STATIC_DRAW);
     assert(glGetError() == 0);
 
-    egs_gl_context_set_property(ctx, "sphere::vao", (void *)&sphere_instance->vao, sizeof(int));
-    egs_gl_context_set_property(ctx, "sphere::instance_buffer", (void *)&sphere_instance->instance_buffer, sizeof(int));
-
     egs_printf(EGS_DEBUG, "created sphere buffer\n");
   }
 
+  sphere_instance_t* sphere_instance = (sphere_instance_t*)*per_context_instance_data;
   assert(glGetError() == 0);
-  glBindVertexArray(*((int *)egs_gl_context_get_property(ctx, "sphere::vao", NULL, sizeof(int))));
+  glBindVertexArray(sphere_instance->vao);
   egs_directional_light_t light = egs_context_get_directional_light_property(egs_gl_context_get_context(ctx), "light::directional_light");
   glUniform3f(glGetUniformLocation(shader_prog, "light_direction"), light.direction_x, light.direction_y, light.direction_z);
-  glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_matrix"), 1, GL_FALSE, (float *)egs_context_get_property(egs_gl_context_get_context(ctx), "view_matrix", NULL, 16*sizeof(float)));
-  glUniformMatrix4fv(glGetUniformLocation(shader_prog, "projection"), 1, GL_FALSE, (float *)egs_context_get_property(egs_gl_context_get_context(ctx), "projection", NULL, 16*sizeof(float)));
+  glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_matrix"), 1, GL_FALSE, (float *)egs_gl_context_get_property(ctx, "view_matrix", NULL, 16*sizeof(float)));
+  glUniformMatrix4fv(glGetUniformLocation(shader_prog, "projection"), 1, GL_FALSE, (float *)egs_gl_context_get_property(ctx, "projection", NULL, 16*sizeof(float)));
 
   assert(glGetError() == 0);
   glDrawElementsInstanced(GL_TRIANGLES, 3*number_of_elements(SPHERE_SUBDIVISION_LEVEL), GL_UNSIGNED_INT, NULL, (GLsizei)data_length/(7*sizeof(float)));
@@ -88,8 +86,8 @@ void sphere_apply(egs_gl_context_ref ctx, const size_t data_length, const uint8_
 
 void sphere_plugin_init_plugin(egs_context_ref ctx_ref) {
   (void) ctx_ref;
-  egs_c_wrapper_register_c_plugin(sphere_plugin_name, &sphere_apply, &sphere_plugin_destroy_spheres);
-  egs_c_wrapper_register_c_plugin(textured_sphere_plugin_name, &textured_sphere_apply, &sphere_plugin_destroy_textured_spheres);
+  egs_c_wrapper_register_c_plugin(sphere_plugin_name, &sphere_apply, &sphere_plugin_destroy_spheres, &sphere_plugin_terminate_spheres);
+  egs_c_wrapper_register_c_plugin(textured_sphere_plugin_name, &textured_sphere_apply, &sphere_plugin_destroy_textured_spheres, &sphere_plugin_terminate_textured_spheres);
 }
 
 void sphere_plugin_terminate_plugin() {
@@ -114,25 +112,30 @@ egs_display_list_elem_ref sphere_plugin_create_spheres(egs_context_ref ctx, unsi
   return egs_c_wrapper_create(wrapper);
 }
 
-void sphere_plugin_destroy_spheres(const size_t data_length, const uint8_t *data, c_property* instance_data) {
+void sphere_plugin_destroy_spheres(egs_gl_context_ref ctx, const size_t data_length, const uint8_t *data, c_property* instance_data, c_property* per_context_instance_data) {
   (void) data_length;
   (void) data;
-  if (*instance_data) {
-    sphere_instance_t* sphere_instance = (sphere_instance_t*)instance_data;
+  if (*per_context_instance_data) {
+    sphere_instance_t* sphere_instance = (sphere_instance_t*)*per_context_instance_data;
     egs_printf(EGS_DEBUG, "Deleting: vbo %d ; ibo %d ; instance buffer %d ; vao %d\n", sphere_instance->vbo, sphere_instance->ibo, sphere_instance->instance_buffer, sphere_instance->vao);
     const GLuint buffers[] = {sphere_instance->vbo, sphere_instance->ibo, sphere_instance->instance_buffer};
     glDeleteBuffers(3, buffers);
     glDeleteVertexArrays(1, &sphere_instance->vao);
-    //free(instance_data);
-    *instance_data = NULL;
+    free(*per_context_instance_data);
+    *per_context_instance_data = NULL;
   }
-  egs_printf(EGS_DEBUG, "sphere destructor\n");
+  egs_printf(EGS_DEBUG, "sphere deleted\n");
+}
+
+void sphere_plugin_terminate_spheres(const size_t data_length, const uint8_t *data, c_property* instance_data) {
+  free((void*)data);
+  egs_printf(EGS_DEBUG, "sphere terminated\n");
 }
 
 /******************************************************************************************/
 /** Textured sphere ***********************************************************************/
 
-void textured_sphere_apply(egs_gl_context_ref ctx, const size_t data_length, const uint8_t *data, c_property* instance_data) {
+void textured_sphere_apply(egs_gl_context_ref ctx, const size_t data_length, const uint8_t *data, c_property* instance_data, c_property* Per_context_instance_data) {
   GLint shader_prog = -1;
   if ((shader_prog = *(int *)egs_gl_context_get_property(ctx, "sphere::shader_program", (void *)&shader_prog, sizeof(int))) == -1) {
     GLuint compiled_shader[2];
@@ -208,8 +211,8 @@ void textured_sphere_apply(egs_gl_context_ref ctx, const size_t data_length, con
   egs_directional_light_t light = egs_context_get_directional_light_property(egs_gl_context_get_context(ctx), "light::directional_light");
   glUniform1i(glGetUniformLocation(shader_prog, "rendered_texture"), 0);
   glUniform3f(glGetUniformLocation(shader_prog, "light_direction"), light.direction_x, light.direction_y, light.direction_z);
-  glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_matrix"), 1, GL_FALSE, (float *)egs_context_get_property(egs_gl_context_get_context(ctx), "view_matrix", NULL, 16*sizeof(float)));
-  glUniformMatrix4fv(glGetUniformLocation(shader_prog, "projection"), 1, GL_FALSE, (float *)egs_context_get_property(egs_gl_context_get_context(ctx), "projection", NULL, 16*sizeof(float)));
+  glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_matrix"), 1, GL_FALSE, (float *)egs_gl_context_get_property(ctx, "view_matrix", NULL, 16*sizeof(float)));
+  glUniformMatrix4fv(glGetUniformLocation(shader_prog, "projection"), 1, GL_FALSE, (float *)egs_gl_context_get_property(ctx, "projection", NULL, 16*sizeof(float)));
 
   assert(glGetError() == 0);
   glDrawArraysInstanced(GL_TRIANGLES, 0, 3*number_of_elements(SPHERE_SUBDIVISION_LEVEL+1), (GLsizei)data_length/(4*sizeof(float)));
@@ -231,17 +234,22 @@ egs_display_list_elem_ref sphere_plugin_create_textured_spheres(egs_context_ref 
   return egs_c_wrapper_create(wrapper);
 }
 
-void sphere_plugin_destroy_textured_spheres(const size_t data_length, const uint8_t *data, c_property* instance_data) {
+void sphere_plugin_destroy_textured_spheres(egs_gl_context_ref ctx, const size_t data_length, const uint8_t *data, c_property* instance_data, c_property* per_context_instance_data) {
   (void) data_length;
   (void) data;
-  if (*instance_data) {
-    sphere_instance_t* sphere_instance = (sphere_instance_t*)instance_data;
+  if (*per_context_instance_data) {
+    sphere_instance_t* sphere_instance = (sphere_instance_t*)*per_context_instance_data;
     egs_printf(EGS_DEBUG, "Deleting: vbo %d ; instance buffer %d ; vao %d\n", sphere_instance->vbo, sphere_instance->ibo, sphere_instance->instance_buffer, sphere_instance->vao);
     const GLuint buffers[] = {sphere_instance->vbo, sphere_instance->instance_buffer};
     glDeleteBuffers(2, buffers);
     glDeleteVertexArrays(1, &sphere_instance->vao);
-    //free(instance_data);
-    *instance_data = NULL;
+    free(*per_context_instance_data);
+    *per_context_instance_data = NULL;
   }
-  egs_printf(EGS_DEBUG, "textured sphere destructor\n");
+  egs_printf(EGS_DEBUG, "textured sphere deleted\n");
+}
+
+void sphere_plugin_terminate_textured_spheres(const size_t data_length, const uint8_t *data, c_property* instance_data) {
+  free((void*)data);
+  egs_printf(EGS_DEBUG, "textured sphere terminated\n");
 }

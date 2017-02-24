@@ -24,9 +24,13 @@ namespace CylinderPlugin {
     Cylinder(const std::vector<glm::vec3> &start, const std::vector<glm::vec3> &end, const std::vector<float> &radii, long color=0);
     ~Cylinder();
     virtual void apply(GLContext& ctx);
+    virtual void delete_handler(GLContext& ctx);
 
   private:
-    GLuint vbo, instance_buffer, vao = 0;
+    struct instance_data_t {
+      GLuint vbo, instance_buffer, vao;
+    };
+    std::unordered_map<GLContext *, instance_data_t> per_context_instance_data;
     std::vector<glm::vec3> start_vec;
     std::vector<glm::vec3> end_vec;
     std::vector<float> radii_vec;

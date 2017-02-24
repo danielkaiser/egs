@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include <vector>
 #include <dlfcn.h>
-#include "gl_context.hxx"
 #include <glm/matrix.hpp>
 #include "c_api.h"
 
@@ -23,6 +22,9 @@ public:
 
   template <typename T>
   T& get_property(const std::string& name, const T& default_v = T()) {
+    if (!_property_store.contains(name)) {
+      egs_printf(EGS_DEBUG, "Property %s not found, setting default value\n", name.c_str());
+    }
     return _property_store.get<T>(name, default_v);
   }
 

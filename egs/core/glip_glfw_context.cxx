@@ -54,8 +54,6 @@ GLIPGLFWContext::GLIPGLFWContext(Context &ctx) : GLContext(ctx) {
   assert(glip_ctx);
   glip_set_current_context(glip_ctx);
   glEnable(GL_DEPTH_TEST);
-  /*glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);*/
 }
 
 bool GLIPGLFWContext::update(std::shared_ptr<DisplayList> display_list) {
@@ -70,12 +68,15 @@ bool GLIPGLFWContext::update(std::shared_ptr<DisplayList> display_list) {
 
   display_list->apply(*this);
   glip_swap_buffers();
+  if (glip_window_should_close()) {
+    return false;
+  }
 
-  //return !glfwWindowShouldClose(window);
   return (glip_ctx->context_state == GLIP_STATE_OK);
 }
 
 GLIPGLFWContext::~GLIPGLFWContext() {
+  glip_glfw_terminate();
   if (glip_ctx) {
     glip_destroy(glip_ctx);
   }

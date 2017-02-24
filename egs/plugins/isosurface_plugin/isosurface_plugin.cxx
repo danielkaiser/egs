@@ -13,6 +13,9 @@ void isosurface_plugin_terminate_plugin() {
 
 IsosurfacePlugin::Isosurface::~Isosurface() {
   egs_printf(EGS_DEBUG, "isosurface destructor\n");
+  for (auto ctx : registered_gl_contexts) {
+    delete_handler(*ctx);
+  }
 }
 
 void IsosurfacePlugin::Isosurface::apply(GLContext& ctx) {
@@ -37,6 +40,10 @@ void IsosurfacePlugin::Isosurface::apply(GLContext& ctx) {
   for (auto it = triangles.begin(); it < triangles.end(); it++) {
     it->apply(ctx);
   }
+}
+
+void IsosurfacePlugin::Isosurface::delete_handler(GLContext& ctx) {
+  egs_printf(EGS_DEBUG, "isosurface delete handler called\n");
 }
 
 /*display_list_elem_ref triangle_plugin_create_triangle(int n_points, float *vertices, float* normals, long color=0) {

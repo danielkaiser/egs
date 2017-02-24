@@ -11,9 +11,9 @@ void triangle_plugin_terminate_plugin() {
 }
 
 TrianglePlugin::Triangle::~Triangle() {
-  glDeleteBuffers(1, &vbo);
-  glDeleteVertexArrays(1, &vao);
-  egs_printf(EGS_DEBUG, "triangle destructor\n");
+  for (auto ctx : registered_gl_contexts) {
+    delete_handler(*ctx);
+  }
 }
 
 void TrianglePlugin::Triangle::apply(GLContext& ctx) {
@@ -28,9 +28,9 @@ void TrianglePlugin::Triangle::apply(GLContext& ctx) {
   }
   glUseProgram(shader_prog);
   assert(!glGetError());
-  if (!vao) {
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  if (!per_context_instance_data[&ctx].vao) {
+    glGenBuffers(1, &per_context_instance_data[&ctx].vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, per_context_instance_data[&ctx].vbo);
     std::vector<glm::vec3> buf_data(2*vertices.size());
     for (size_t i=0; i<vertices.size(); i+=3) {
       buf_data[2*i+0] = vertices[i];
@@ -47,8 +47,8 @@ void TrianglePlugin::Triangle::apply(GLContext& ctx) {
       }
     }
     glBufferData(GL_ARRAY_BUFFER, buf_data.size()*sizeof(glm::vec3), &buf_data[0].x, GL_STATIC_DRAW);
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    glGenVertexArrays(1, &per_context_instance_data[&ctx].vao);
+    glBindVertexArray(per_context_instance_data[&ctx].vao);
     glVertexAttribPointer(glGetAttribLocation(shader_prog, "position"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(0*sizeof(GLfloat)));
     glVertexAttribPointer(glGetAttribLocation(shader_prog, "normal"), 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
     glEnableVertexAttribArray(0);
@@ -56,7 +56,7 @@ void TrianglePlugin::Triangle::apply(GLContext& ctx) {
     assert(!glGetError());
     egs_printf(EGS_DEBUG, "created triangle buffer\n");
   }
-  glBindVertexArray(vao);
+  glBindVertexArray(per_context_instance_data[&ctx].vao);
   egs_directional_light light = ctx.get_context().get_property<egs_directional_light>("light::directional_light");
   auto light_dir = glm::vec3(light.direction_x, light.direction_y, light.direction_z);
   glUniform3fv(glGetUniformLocation(shader_prog, "light_direction"), 1, &light_dir.x);
@@ -72,6 +72,12 @@ void TrianglePlugin::Triangle::apply(GLContext& ctx) {
   assert(!glGetError());
 }
 
+void TrianglePlugin::Triangle::delete_handler(GLContext& ctx) {
+  egs_printf(EGS_DEBUG, "triangle delete handler called\n");
+  glDeleteBuffers(1, &per_context_instance_data[&ctx].vbo);
+  glDeleteVertexArrays(1, &per_context_instance_data[&ctx].vao);
+  egs_printf(EGS_DEBUG, "triangle deleted\n");
+}
 
 egs_display_list_elem_ref triangle_plugin_create_triangle(egs_context_ref ctx, int n_points, float *vertices, float* normals, long color=0) {
   (void) ctx;

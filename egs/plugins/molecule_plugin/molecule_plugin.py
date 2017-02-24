@@ -78,7 +78,7 @@ class Molecule:
         return self._molecule_ref
 
     @staticmethod
-    def apply(ctx_ref, data_size, data, plugin_data):
+    def apply(ctx_ref, data_size, data, plugin_data, per_context_plugin_data):
         instance = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint32))[0]
         if instance not in Molecule.plugin_instances:
             egs.printf("molecule plugin instance not found", egs.WARNING)
@@ -87,17 +87,30 @@ class Molecule:
             Context.call_apply(ctx_ref, Molecule.plugin_instances[instance].cylinder)
 
     @staticmethod
+    def delete(ctx_ref, data_size, data, plugin_data, per_context_plugin_data):
+        instance = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint32))[0]
+        if instance not in Molecule.plugin_instances:
+            egs.printf("molecule plugin instance not found", egs.WARNING)
+        else:
+            egs.printf("molecule delete: calling sphere delete", egs.DEBUG)
+            Context.call_delete(ctx_ref, Molecule.plugin_instances[instance].spheres)
+            egs.printf("molecule delete: calling cylinder delete", egs.DEBUG)
+            Context.call_delete(ctx_ref, Molecule.plugin_instances[instance].cylinder)
+            del instance
+            egs.printf("molecule delete: done", egs.DEBUG)
+
+    @staticmethod
     def terminate(data_size, data, plugin_data):
         instance = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint32))[0]
         if instance not in Molecule.plugin_instances:
             egs.printf("molecule plugin instance not found", egs.WARNING)
         else:
-            egs.printf("molecule destructor: calling sphere destructor", egs.DEBUG)
+            egs.printf("molecule terminate: calling sphere terminate", egs.DEBUG)
             Context.call_terminate(Molecule.plugin_instances[instance].spheres)
-            egs.printf("molecule destructor: calling cylinder destructor", egs.DEBUG)
+            egs.printf("molecule terminate: calling cylinder terminate", egs.DEBUG)
             Context.call_terminate(Molecule.plugin_instances[instance].cylinder)
             del instance
-            egs.printf("molecule destructor: done", egs.DEBUG)
+            egs.printf("molecule terminate: done", egs.DEBUG)
 
     @staticmethod
     def from_xyz_file(useless_context, filename):
@@ -111,8 +124,9 @@ wrapped_molecule_create_fun = molecule_create_fun(Molecule.from_xyz_file)
 
 def molecule_plugin_init_plugin(ctx_ref):
     Molecule.apply_fun = PluginWrapper.apply_fun_callback(Molecule.apply)
+    Molecule.delete_fun = PluginWrapper.delete_fun_callback(Molecule.delete)
     Molecule.terminate_fun = PluginWrapper.terminate_fun_callback(Molecule.terminate)
-    PluginWrapper.register_c_plugin(Molecule.plugin_name, Molecule.apply_fun, Molecule.terminate_fun)
+    PluginWrapper.register_c_plugin(Molecule.plugin_name, Molecule.apply_fun, Molecule.delete_fun, Molecule.terminate_fun)
 
     Context.load_plugin_ptr(ctx_ref, "sphere_plugin".encode('utf-8'))
     Context.load_plugin_ptr(ctx_ref, "cylinder_plugin".encode('utf-8'))

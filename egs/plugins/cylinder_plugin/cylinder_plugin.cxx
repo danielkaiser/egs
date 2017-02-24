@@ -1,9 +1,8 @@
-#define GLM_FORCE_SWIZZLE
 #include "cylinder_plugin.hxx"
-#include "../triangle_plugin/triangle_plugin.hxx"
 #include <glm/vec4.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtx/transform.hpp>
+#include "egs.h"
 
 #define CYLINDER_VERTICES 16
 
@@ -35,10 +34,9 @@ CylinderPlugin::Cylinder::Cylinder(const std::vector<glm::vec3> &start, const st
 start_vec(start), end_vec(end), radii_vec(radii), color(color){}
 
 CylinderPlugin::Cylinder::~Cylinder() {
-  const GLuint buffers[2] = {vbo, instance_buffer};
-  glDeleteBuffers(2, buffers);
-  glDeleteVertexArrays(1, &vao);
-  egs_printf(EGS_DEBUG, "cylinder destructor\n");
+  for (auto ctx : registered_gl_contexts) {
+    delete_handler(*ctx);
+  }
 }
 
 void CylinderPlugin::Cylinder::apply(GLContext& ctx) {
@@ -52,20 +50,19 @@ void CylinderPlugin::Cylinder::apply(GLContext& ctx) {
   }
   glGetError();
   glUseProgram(shader_prog);
-  //vao = ctx.get_property<int>("cylinder::vao", 0);
-  if (!vao) {
+  if (!per_context_instance_data[&ctx].vao) {
     assert(glGetError() == 0);
-    glGenBuffers(1, &vbo);
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glGenBuffers(1, &per_context_instance_data[&ctx].vbo);
+    glGenVertexArrays(1, &per_context_instance_data[&ctx].vao);
+    glBindVertexArray(per_context_instance_data[&ctx].vao);
+    glBindBuffer(GL_ARRAY_BUFFER, per_context_instance_data[&ctx].vbo);
 
     assert(glGetError() == 0);
     glVertexAttribPointer(glGetAttribLocation(shader_prog, "position"), 3, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(0);
     assert(glGetError() == 0);
 
-    create_cylinder(vbo, CYLINDER_VERTICES/2.);
+    create_cylinder(per_context_instance_data[&ctx].vbo, CYLINDER_VERTICES/2.);
 
     std::vector<glm::mat4> cylinder_instances;
     for (size_t i = 0; i < start_vec.size(); i++) {
@@ -83,8 +80,8 @@ void CylinderPlugin::Cylinder::apply(GLContext& ctx) {
       cylinder_instances.push_back(glm::transpose(transform));
     }
 
-    glGenBuffers(1, &instance_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, instance_buffer);
+    glGenBuffers(1, &per_context_instance_data[&ctx].instance_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, per_context_instance_data[&ctx].instance_buffer);
 
     GLuint cylinder_location = glGetAttribLocation(shader_prog, "cylinder_position");
     for (int i=0; i<3; i++) {
@@ -96,22 +93,29 @@ void CylinderPlugin::Cylinder::apply(GLContext& ctx) {
     glBufferData(GL_ARRAY_BUFFER, start_vec.size()*sizeof(glm::mat4), (void*)cylinder_instances.data(), GL_STATIC_DRAW);
     assert(glGetError() == 0);
 
-    ctx.set_property<int>("cylinder::vao", vao);
     egs_printf(EGS_DEBUG, "created cylinder buffer\n");
   }
-  glBindVertexArray(vao);
+  glBindVertexArray(per_context_instance_data[&ctx].vao);
   egs_directional_light_t light = ctx.get_context().get_property<egs_directional_light_t>("light::directional_light");
   glUniform3f(glGetUniformLocation(shader_prog, "light_direction"), light.direction_x, light.direction_y, light.direction_z);
   glUniform1f(glGetUniformLocation(shader_prog, "ambient"), light.ambient);
   glUniform1f(glGetUniformLocation(shader_prog, "diffuse"), light.diffuse);
   glUniform1f(glGetUniformLocation(shader_prog, "specular"), light.specular);
   glUniform3f(glGetUniformLocation(shader_prog, "color"), ((color&0x00ff0000)>>16)/255., ((color&0x0000ff00)>>8)/255., ((color&0x000000ff)/255.));
-  glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_matrix"), 1, GL_FALSE, &ctx.get_context().get_property<glm::mat4>("view_matrix")[0].x);
-  glUniformMatrix4fv(glGetUniformLocation(shader_prog, "projection"), 1, GL_FALSE, &ctx.get_context().get_property<glm::mat4>("projection")[0].x);
+  glUniformMatrix4fv(glGetUniformLocation(shader_prog, "view_matrix"), 1, GL_FALSE, &ctx.get_property<glm::mat4>("view_matrix")[0].x);
+  glUniformMatrix4fv(glGetUniformLocation(shader_prog, "projection"), 1, GL_FALSE, &ctx.get_property<glm::mat4>("projection")[0].x);
 
   assert(glGetError() == 0);
   glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, CYLINDER_VERTICES, (GLint)start_vec.size());
   assert(glGetError() == 0);
+}
+
+void CylinderPlugin::Cylinder::delete_handler(GLContext& ctx) {
+  egs_printf(EGS_DEBUG, "cylinder delete handler called\n");
+  const GLuint buffers[2] = {per_context_instance_data[&ctx].vbo, per_context_instance_data[&ctx].instance_buffer};
+  glDeleteBuffers(2, buffers);
+  glDeleteVertexArrays(1, &per_context_instance_data[&ctx].vao);
+  egs_printf(EGS_DEBUG, "cylinder deleted\n");
 }
 
 egs_display_list_elem_ref cylinder_plugin_create_cylinder(egs_context_ref ctx, int n, float *start, float* end, float *radii, long color=0) {

@@ -30,6 +30,7 @@ namespace CallbackPlugin {
     Callback(const callback_type& callback);
     virtual ~Callback();
     virtual void apply(GLContext& ctx);
+    virtual void delete_handler(GLContext& ctx);
 
   private:
     callback_type m_callback;

@@ -9,7 +9,6 @@
 #include "glip_glfw_server.h"
 #include "glip.h"
 #include "glad.h"
-#include "glip_impl.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <zmq.h>
@@ -17,13 +16,11 @@
 #include <GLFW/glfw3.h>
 #include "glip_glfw_protocol_impl.h"
 
-void glip_zmq_msg_free(void *data, void *hint) {
-  (void) hint;
-  free (data);
-}
+extern void (*const glip_implementations[])(const char *, char**, size_t *);
 
 int main(int argc, char *argv[]) {
   int rc;
+  int glip_glfw_terminated = 0;
   if (argc < 2) {
     fprintf(stderr, "usage: %s <zmq-socket>\n", argv[0]);
     exit(EXIT_FAILURE);
@@ -52,7 +49,7 @@ int main(int argc, char *argv[]) {
   glip_context_t *glip_ctx = glip_init(1, argv[1]);
   glip_set_current_context(glip_ctx);
 
-  while(!glfwWindowShouldClose(window)) {
+  while(!glip_glfw_terminated) {
     zmq_msg_t msg;
     zmq_msg_init(&msg);
     glfwPollEvents();
@@ -67,11 +64,24 @@ int main(int argc, char *argv[]) {
       if (*func_data < GLFW_FUNCTION_OFFSET) {
         glip_implementations[*func_data](msg_data, &res, &res_len);
       } else {
+        fprintf(stderr, "func: %d\n", *func_data);
         switch (*func_data) {
           case GLFW_SWAP_BUFFER:
             glip_debug("swap buffer\n");
             glfwSwapBuffers(window);
             break;
+          case GLFW_WINDOW_SHOULD_CLOSE:
+            glip_debug("check window_should_close\n");
+            int glip_glfw_window_should_close = glfwWindowShouldClose(window);
+            res_len = sizeof(int);
+            res = (char *)malloc(res_len);
+            assert(res);
+            ((int *)res)[0] = glip_glfw_window_should_close;
+            break;
+          case GLFW_TERMINATE_WINDOW:
+            glip_debug("glfw terminate\n");
+            glip_glfw_terminated = 1;
+            glfwTerminate();
           default:
             fprintf(stderr, "Unknown GLFW function\n");
         }

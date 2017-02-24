@@ -137,6 +137,10 @@ class Context(ctypes.Structure):
         _egs.egs_display_list_element_apply(dl_elem, ctx_ref)
 
     @staticmethod
+    def call_delete(ctx_ref, dl_elem):
+        _egs.egs_display_list_element_delete(dl_elem, ctx_ref)
+
+    @staticmethod
     def call_terminate(dl_elem):
         _egs.egs_display_list_element_terminate(dl_elem)
 
@@ -197,7 +201,8 @@ class GLOffscreenRenderer(GLContext, ctypes.Structure):
 
 class PluginWrapper(ctypes.Structure):
     _fields_ = [("plugin_name", ctypes.c_char_p), ("data_length", ctypes.c_size_t), ("data", ctypes.POINTER(ctypes.c_uint8))]
-    apply_fun_callback = ctypes.CFUNCTYPE(None, ctypes.POINTER(GLContext), ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint8), ctypes.c_void_p)
+    apply_fun_callback = ctypes.CFUNCTYPE(None, ctypes.POINTER(GLContext), ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint8), ctypes.c_void_p, ctypes.c_void_p)
+    delete_fun_callback = ctypes.CFUNCTYPE(None, ctypes.POINTER(GLContext), ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint8), ctypes.c_void_p, ctypes.c_void_p)
     terminate_fun_callback = ctypes.CFUNCTYPE(None, ctypes.c_size_t, ctypes.POINTER(ctypes.c_uint8), ctypes.c_void_p)
     empty_terminate_fun = terminate_fun_callback(lambda *args, **kwargs: None)
 
@@ -205,10 +210,10 @@ class PluginWrapper(ctypes.Structure):
         return _egs.egs_c_wrapper_create(self)
 
     @staticmethod
-    def register_c_plugin(name_ptr, apply_fun, terminate_fun=None):
+    def register_c_plugin(name_ptr, apply_fun, delete_fun, terminate_fun=None):
         if not terminate_fun:
             terminate_fun = PluginWrapper.empty_terminate_fun
-        _egs.egs_c_wrapper_register_c_plugin(name_ptr, apply_fun, terminate_fun)
+        _egs.egs_c_wrapper_register_c_plugin(name_ptr, apply_fun, delete_fun, terminate_fun)
 
 
 _egs.egs_context_create.argtypes = []
@@ -226,6 +231,8 @@ _egs.egs_display_list_remove_element.argtypes = [ctypes.POINTER(DisplayList), ct
 _egs.egs_display_list_remove_element.restype = None
 _egs.egs_display_list_element_apply.argtypes = [ctypes.POINTER(DisplayListElem), ctypes.POINTER(GLContext)]
 _egs.egs_display_list_element_apply.restype = None
+_egs.egs_display_list_element_delete.argtypes = [ctypes.POINTER(DisplayListElem), ctypes.POINTER(GLContext)]
+_egs.egs_display_list_element_delete.restype = None
 _egs.egs_display_list_destroy.argtypes = [ctypes.POINTER(DisplayList)]
 _egs.egs_display_list_destroy.restype = None
 
@@ -248,7 +255,7 @@ _egs.egs_gloffscreen_get_data.restype = ctypes.POINTER(ctypes.c_int)
 
 _egs.egs_c_wrapper_create.argtypes = [PluginWrapper]
 _egs.egs_c_wrapper_create.restype = ctypes.POINTER(DisplayListElem)
-_egs.egs_c_wrapper_register_c_plugin.argtypes = [ctypes.c_char_p, PluginWrapper.apply_fun_callback, PluginWrapper.terminate_fun_callback]
+_egs.egs_c_wrapper_register_c_plugin.argtypes = [ctypes.c_char_p, PluginWrapper.apply_fun_callback, PluginWrapper.delete_fun_callback, PluginWrapper.terminate_fun_callback]
 _egs.egs_c_wrapper_register_c_plugin.restype = None
 
 _egs_py_loader_fun = ctypes.CFUNCTYPE(None, ctypes.POINTER(GLContext), ctypes.c_char_p, ctypes.c_char_p)

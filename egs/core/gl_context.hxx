@@ -9,6 +9,8 @@ class GLContext;
 #include <iostream>
 #include <glm/matrix.hpp>
 #include <glm/vec3.hpp>
+#include <unordered_set>
+#include <set>
 
 class GLContext : public std::enable_shared_from_this<GLContext> {
 public:
@@ -16,6 +18,9 @@ public:
   virtual ~GLContext();
   virtual bool update(std::shared_ptr<DisplayList>) = 0;
   int draw_png(std::string filename, int width, int height);
+
+  void register_on_delete_handler(const std::function<void(GLContext &)>&);
+  void unregister_on_delete_handler(const std::function<void(GLContext &)>&);
 
   void rotate(glm::vec3 dir, float angle);
   void translate(glm::vec3 dir);
@@ -26,7 +31,10 @@ public:
 
   template <typename T>
   T& get_property(const std::string& name, const T& default_v = T()) {
-    return property_store.get<T>(name, default_v);
+    if (property_store.contains(name)) {
+      return property_store.get<T>(name, default_v);
+    }
+    return ctx.get_property<T>(name, default_v);
   }
 
   template <typename T>
@@ -40,6 +48,15 @@ public:
 protected:
   Context &ctx;
   PropertyStore property_store;
+private:
+  struct func_compare {
+    bool operator() (const std::function<void(GLContext &)>& lhs, const std::function<void(GLContext &)>& rhs) const {
+      return lhs.target<void(GLContext &)>() < rhs.target<void(GLContext &)>();
+    }
+  };
+
+  std::set<std::function<void(GLContext &)>, func_compare> on_delete_handler;
+  //std::vector<std::function<void(GLContext &)>> on_delete_handler;
 };
 
 #endif

@@ -1,4 +1,3 @@
-#define GLM_FORCE_SWIZZLE
 #include <memory>
 #include <iostream>
 #include <Python.h>
@@ -35,6 +34,7 @@ Context::Context() {
   set_property("camera_center", camera_center);
   set_property("camera_up", camera_up);
   set_property("view_matrix", glm::lookAt(camera_position, camera_center, camera_up));
+  set_property("clear_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
 #if defined DEBUG || defined EBUG
   struct sigaction sa;
@@ -71,7 +71,7 @@ void Context::rotate(glm::vec3 axis, float angle) {
   auto camera_right = glm::normalize(glm::cross(camera_forward, camera_up));
 
   axis = axis.x * camera_right + axis.y * camera_up + axis.z * camera_forward;
-  camera_position = (glm::rotate(angle, axis)*glm::vec4(camera_position, 1)).xyz();
+  camera_position = glm::vec3(glm::rotate(angle, axis)*glm::vec4(camera_position, 1));
   camera_up = glm::normalize(glm::cross(camera_right, camera_center-camera_position));
   set_property("camera_position", camera_position);
   set_property("camera_center", camera_center);

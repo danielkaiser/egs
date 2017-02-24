@@ -22,6 +22,7 @@ namespace RenderToTexturePlugin {
     ~Plot();
 
     virtual void apply(GLContext& ctx);
+    virtual void delete_handler(GLContext& ctx);
 
   private:
     std::shared_ptr<DisplayList> display_list;
@@ -36,6 +37,7 @@ namespace RenderToTexturePlugin {
     ~Surface();
 
     virtual void apply(GLContext& ctx);
+    virtual void delete_handler(GLContext& ctx);
 
   private:
     glm::vec3 pos1, pos2, pos3, pos4;

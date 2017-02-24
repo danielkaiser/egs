@@ -30,6 +30,7 @@ egs_display_list_ref egs_display_list_create();
 void egs_display_list_add_element(egs_display_list_ref, egs_display_list_elem_ref);
 void egs_display_list_remove_element(egs_display_list_ref, egs_display_list_elem_ref);
 void egs_display_list_element_apply(egs_display_list_elem_ref, egs_gl_context_ref);
+void egs_display_list_element_delete(egs_display_list_elem_ref, egs_gl_context_ref);
 void egs_display_list_element_terminate(egs_display_list_elem_ref);
 void egs_display_list_destroy(egs_display_list_ref);
 
@@ -43,10 +44,11 @@ typedef struct {
 } egs_cwrapper_t;
 
 typedef egs_cwrapper_t* egs_cwrapper_ref;
-typedef void (*egs_apply_fun)(egs_gl_context_ref, const size_t data_length, const uint8_t *data, c_property *instance_data);
+typedef void (*egs_apply_fun)(egs_gl_context_ref, const size_t data_length, const uint8_t *data, c_property *instance_data, c_property *per_context_instance_data);
 typedef void (*egs_terminate_fun)(const size_t data_length, const uint8_t *data, c_property *instance_data);
+typedef void (*egs_delete_fun)(egs_gl_context_ref, const size_t data_length, const uint8_t *data, c_property *instance_data, c_property *per_context_instance_data);
 
-void egs_c_wrapper_register_c_plugin(const char* plugin_name, egs_apply_fun apply, egs_terminate_fun term);
+void egs_c_wrapper_register_c_plugin(const char* plugin_name, egs_apply_fun apply, egs_delete_fun delete_fun,egs_terminate_fun term);
 egs_display_list_elem_ref egs_c_wrapper_create(egs_cwrapper_t);
 
 /* context */

@@ -26,11 +26,15 @@ namespace TrianglePlugin {
     ~Triangle();
 
     virtual void apply(GLContext& ctx);
+    virtual void delete_handler(GLContext& ctx);
   private:
+    struct instance_data_t {
+      GLuint vao=0, vbo=0;
+    };
+    std::unordered_map<GLContext *, instance_data_t> per_context_instance_data;
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
     long color;
-    GLuint vao=0, vbo=0;
   };
 };
 

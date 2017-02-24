@@ -32,10 +32,13 @@ void sphere_plugin_init_plugin(egs_context_ref ctx_ref);
 void sphere_plugin_terminate_plugin();
 
 egs_display_list_elem_ref sphere_plugin_create_spheres(egs_context_ref ctx, unsigned int n, float *positions, float *radii, long *colors);
-void sphere_plugin_destroy_spheres();
-void sphere_apply(egs_gl_context_ref ctx, const size_t data_length, const uint8_t *data, c_property* instance_data);
+void sphere_apply(egs_gl_context_ref ctx, const size_t data_length, const uint8_t *data, c_property* instance_data, c_property* per_context_instance_data);
+void sphere_plugin_destroy_spheres(egs_gl_context_ref ctx, const size_t data_length, const uint8_t *data, c_property* instance_data, c_property* per_context_instance_data);
+void sphere_plugin_terminate_spheres(const size_t data_length, const uint8_t *data, c_property* instance_data);
 
 egs_display_list_elem_ref sphere_plugin_create_textured_spheres(egs_context_ref ctx, unsigned int n, float *positions, float *radii);
-void sphere_plugin_destroy_textured_spheres();
-void textured_sphere_apply(egs_gl_context_ref ctx, const size_t data_length, const uint8_t *data, c_property* instance_data);
+void textured_sphere_apply(egs_gl_context_ref ctx, const size_t data_length, const uint8_t *data, c_property* instance_data, c_property* per_context_instance_data);
+void sphere_plugin_destroy_textured_spheres(egs_gl_context_ref ctx, const size_t data_length, const uint8_t *data, c_property* instance_data, c_property* per_context_instance_data);
+void sphere_plugin_terminate_textured_spheres(const size_t data_length, const uint8_t *data, c_property* instance_data);
+
 #endif /* sphere_plugin_h */
