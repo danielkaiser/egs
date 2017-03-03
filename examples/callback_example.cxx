@@ -3,7 +3,7 @@
 
 int main(void) {
   Context ctx;
-  GLFWContext glfw_ctx = GLFWContext(ctx);
+  GLFWContext glfw_ctx(ctx);
   auto display_list = std::make_shared<DisplayList>();
 
   const char *text = "Hello EGS!";

@@ -10,6 +10,7 @@
 #include "compile_shader.hxx"
 #include "context.hxx"
 #include "gl_context.hxx"
+#include "gl_interactivity_mixin.hxx"
 #include "gl_offscreen_context.hxx"
 #include "glfw_context.hxx"
 #include "glip_glfw_context.hxx"

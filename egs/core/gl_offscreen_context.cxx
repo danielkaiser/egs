@@ -128,6 +128,14 @@ GLOffscreenRenderer::GLOffscreenRenderer(Context &ctx) : GLContext(ctx) {
   pixels = (int *)malloc(width*height*sizeof(int));
 }
 
+int GLOffscreenRenderer::get_width() {
+  return 500;
+}
+
+int GLOffscreenRenderer::get_height() {
+  return 500;
+}
+
 bool GLOffscreenRenderer::update(std::shared_ptr<DisplayList> display_list) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   display_list->apply(*this);

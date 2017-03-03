@@ -12,14 +12,21 @@
 #include <stdio.h>
 #include "glip.h"
 #include <GLFW/glfw3.h>
+#include "gl_interactivity_mixin.hxx"
 #include "gl_context.hxx"
+#include <memory>
 
-class GLFWContext : public GLContext {
+class GLFWContext : public GLContext, public GLInteractivityMixin {
 public:
   GLFWContext(Context &ctx);
+  GLFWContext(Context &ctx, int width, int height);
+  GLFWContext(Context &ctx, int width, int height, int pos_x, int pos_y);
   ~GLFWContext();
 
   virtual bool update(std::shared_ptr<DisplayList>);
+
+  int get_width();
+  int get_height();
 private:
   static unsigned int window_count;
   GLFWwindow *window = nullptr;

@@ -15,9 +15,13 @@ class GLContext;
 class GLContext : public std::enable_shared_from_this<GLContext> {
 public:
   GLContext(Context &_ctx);
+  GLContext(const GLContext &) = delete;
   virtual ~GLContext();
   virtual bool update(std::shared_ptr<DisplayList>) = 0;
   int draw_png(std::string filename, int width, int height);
+
+  virtual int get_width() = 0;
+  virtual int get_height() = 0;
 
   void register_on_delete_handler(const std::function<void(GLContext &)>&);
   void unregister_on_delete_handler(const std::function<void(GLContext &)>&);
@@ -56,7 +60,6 @@ private:
   };
 
   std::set<std::function<void(GLContext &)>, func_compare> on_delete_handler;
-  //std::vector<std::function<void(GLContext &)>> on_delete_handler;
 };
 
 #endif

@@ -28,7 +28,10 @@ public:
   
   virtual bool update(std::shared_ptr<DisplayList>);
   int *get_pixel_data();
-  
+
+  int get_width();
+  int get_height();
+
 private:
 #if __APPLE__
   CGLContextObj cgl_ctx;

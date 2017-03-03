@@ -82,6 +82,14 @@ GLIPGLFWContext::~GLIPGLFWContext() {
   }
 }
 
+int GLIPGLFWContext::get_width() {
+  return -1; // TODO
+}
+
+int GLIPGLFWContext::get_height() {
+  return -1; // TODO
+}
+
 egs_glip_glfw_context_ref egs_glip_glfw_context_create(egs_context_ref ctx_ref) {
   Context *ctx = reinterpret_cast<Context *>(ctx_ref);
   GLIPGLFWContext *glfw_ctx = new GLIPGLFWContext(*ctx);

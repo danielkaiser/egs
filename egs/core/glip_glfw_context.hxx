@@ -20,6 +20,9 @@ public:
   ~GLIPGLFWContext();
 
   virtual bool update(std::shared_ptr<DisplayList>);
+
+  int get_width();
+  int get_height();
 private:
   glip_context_t *glip_ctx = nullptr;
 };

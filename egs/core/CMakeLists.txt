@@ -11,6 +11,7 @@ set(SOURCE_FILES
 	c_wrapper_dle.cxx
 	compile_shader.cxx
 	context.cxx
+    gl_interactivity_mixin.cxx
 	gl_context.cxx
 	gl_offscreen_context.cxx
 	glfw_context.cxx
