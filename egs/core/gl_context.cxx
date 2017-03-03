@@ -4,7 +4,7 @@
 #include <iostream>
 #include <png.h>
 
-GLContext::GLContext(Context &_ctx): ctx(_ctx) {
+GLContext::GLContext(Context &_ctx): ctx(_ctx), CameraMovementMixin(*this) {
   // ctx.register_gl_context(std::shared_ptr<GLContext>(this));
 }
 
@@ -13,49 +13,6 @@ GLContext::~GLContext() {
   for (std::function<void(GLContext &)> f : on_delete_handler) {
     f(*this);
   }
-}
-
-void GLContext::rotate(glm::vec3 axis, float angle) {
-  auto camera_position = get_property<glm::vec3>("camera_position");
-  auto camera_center = get_property<glm::vec3>("camera_center");
-  auto camera_up = get_property<glm::vec3>("camera_up");
-  auto camera_forward = camera_center-camera_position;
-  auto camera_right = glm::normalize(glm::cross(camera_forward, camera_up));
-  axis = axis.x * camera_right + axis.y * camera_up + axis.z * camera_forward;
-  camera_position = glm::vec3(glm::rotate(angle, axis)*glm::vec4(camera_position, 1));
-  camera_up = glm::normalize(glm::cross(camera_right, camera_center-camera_position));
-  set_property("camera_position", camera_position);
-  set_property("camera_center", camera_center);
-  set_property("camera_up", camera_up);
-  set_property("view_matrix", glm::lookAt(camera_position, camera_center, camera_up));
-}
-
-void GLContext::translate(glm::vec3 dir) {
-  auto camera_position = get_property<glm::vec3>("camera_position");
-  auto camera_center = get_property<glm::vec3>("camera_center");
-  auto camera_up = get_property<glm::vec3>("camera_up");
-  auto camera_forward = camera_center-camera_position;
-  auto camera_right = glm::normalize(glm::cross(camera_forward, camera_up));
-  dir = dir.x * camera_right + dir.y * camera_up + dir.z * camera_forward;
-  camera_center += dir;
-  camera_position += dir;
-  set_property("camera_position", camera_position);
-  set_property("camera_center", camera_center);
-  auto view_matrix = glm::lookAt(camera_position, camera_center, camera_up);
-  set_property("view_matrix", view_matrix);
-}
-
-void GLContext::zoom(float f) {
-  auto camera_position = get_property<glm::vec3>("camera_position");
-  auto camera_center = get_property<glm::vec3>("camera_center");
-  auto camera_up = get_property<glm::vec3>("camera_up");
-  camera_position = (camera_position - camera_center)*f + camera_center;
-  set_property("camera_position", camera_position);
-  set_property("view_matrix", glm::lookAt(camera_position, camera_center, camera_up));
-}
-
-void GLContext::set_perspective(float fovy, float aspect, float znear, float zfar) {
-  set_property<glm::mat4>("projection", glm::perspective(fovy, aspect, znear, zfar));
 }
 
 void GLContext::register_on_delete_handler(const std::function<void(GLContext &)>& func) {

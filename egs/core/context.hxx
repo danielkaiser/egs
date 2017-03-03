@@ -8,17 +8,13 @@
 #include <vector>
 #include <dlfcn.h>
 #include <glm/matrix.hpp>
+#include "camera_movement_mixin.hxx"
 #include "c_api.h"
 
-class Context {
+class Context : public CameraMovementMixin<Context> {
 public:
   Context();
   ~Context();
-
-  void rotate(glm::vec3 axis, float angle);
-  void translate(glm::vec3 dir);
-  void zoom(float f);
-  void set_perspective(float fovy, float aspect, float znear, float zfar);
 
   template <typename T>
   T& get_property(const std::string& name, const T& default_v = T()) {

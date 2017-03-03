@@ -11,8 +11,9 @@ class GLContext;
 #include <glm/vec3.hpp>
 #include <unordered_set>
 #include <set>
+#include "camera_movement_mixin.hxx"
 
-class GLContext : public std::enable_shared_from_this<GLContext> {
+class GLContext : public CameraMovementMixin<GLContext>, public std::enable_shared_from_this<GLContext> {
 public:
   GLContext(Context &_ctx);
   GLContext(const GLContext &) = delete;
@@ -26,10 +27,6 @@ public:
   void register_on_delete_handler(const std::function<void(GLContext &)>&);
   void unregister_on_delete_handler(const std::function<void(GLContext &)>&);
 
-  void rotate(glm::vec3 dir, float angle);
-  void translate(glm::vec3 dir);
-  void zoom(float f);
-  void set_perspective(float fovy=45, float aspect=1, float znear=0.1, float zfar=200);
   void set_property_ptr(const std::string& name, void* value, size_t size);
   void *get_property_ptr(const std::string& name, void *default_val, size_t size);
 
