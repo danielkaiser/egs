@@ -2,6 +2,7 @@
 #include "molecule_plugin.h"
 #include <functional>
 #include <vector>
+#include <algorithm>
 
 int main(void) {
   Context ctx;
