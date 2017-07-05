@@ -6,10 +6,16 @@
 #include <glm/vec3.hpp>
 #include <glm/gtx/transform.hpp>
 
+class ICameraMovementMixin {
+public:
+  virtual ~ICameraMovementMixin() {}
+};
+
 template <typename T>
-class CameraMovementMixin {
+class CameraMovementMixin : public ICameraMovementMixin {
 public:
   CameraMovementMixin(T &ctx) : ctx(ctx) {}
+  virtual ~CameraMovementMixin() {}
 
   void rotate(glm::vec3 axis, float angle) {
     auto camera_position = get_property<glm::vec3>("camera_position");

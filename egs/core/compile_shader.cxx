@@ -6,6 +6,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include "context.hxx"
 
 GLuint Util::compile_shader_file(const GLuint shader_type, const std::string file_name) {
   std::string shader_path = Context::get_plugin_path();
@@ -28,9 +29,8 @@ GLuint Util::compile_shader(const GLuint shader_type, const std::string shader_s
     std::vector<GLchar> errorLog(maxLength);
     glGetShaderInfoLog(shader, maxLength, &maxLength, &errorLog[0]);
     for (auto c: errorLog) {
-      std::cerr << c;
+      egs_printf(EGS_ERROR, "%s\n", c);
     }
-    std::cerr << std::endl;
     glDeleteShader(shader);
   }
   return shader;
@@ -51,9 +51,8 @@ GLuint Util::link_shader_program(const std::vector<GLuint> &shader, const std::s
     std::vector<GLchar> infoLog(maxLength);
     glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
     for (auto c: infoLog) {
-      std::cerr << c;
+      egs_printf(EGS_ERROR, "%s\n", c);
     }
-    std::cerr << std::endl;
     glDeleteProgram(program);
   }
   for (auto s: shader) {

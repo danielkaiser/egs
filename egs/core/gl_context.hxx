@@ -49,6 +49,7 @@ public:
 protected:
   Context &ctx;
   PropertyStore property_store;
+  void call_delete_handler();
 private:
   struct func_compare {
     bool operator() (const std::function<void(GLContext &)>& lhs, const std::function<void(GLContext &)>& rhs) const {

@@ -9,9 +9,10 @@ endif()
 
 set(SOURCE_FILES
 	c_wrapper_dle.cxx
+  camera_movement_mixin.cxx
 	compile_shader.cxx
 	context.cxx
-    gl_interactivity_mixin.cxx
+  gl_interactivity_mixin.cxx
 	gl_context.cxx
 	gl_offscreen_context.cxx
 	glfw_context.cxx
@@ -20,11 +21,13 @@ set(SOURCE_FILES
 	displaylist.cxx
 	light.cxx
 	propertystore.cxx
+  glip_event_list.c
 )
 
 set(HEADER_FILES
     c_api.h
 	c_wrapper_dle.hxx
+  camera_movement_mixin.hxx
 	compile_shader.hxx
 	context.hxx
 	gl_context.hxx
@@ -34,8 +37,9 @@ set(HEADER_FILES
 	glip_glfw_protocol_impl.h
 	displaylist.hxx
 	light.h
+  glip_event_list.h
 	propertystore.hxx
-    egs.h
+  egs.h
 )
 
 add_library(${PROJECT_NAME} ${SOURCE_FILES})
@@ -46,17 +50,19 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_EXTENSIONS OFF)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${PYTHON_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${PYTHON_INCLUDE_DIRS})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION egs/lib)
 install(FILES ${HEADER_FILES} DESTINATION egs/include)
 
 set(SOURCE_FILES
 	glip_glfw_server.c
+  glip_event_list.c
 )
 
 set(HEADER_FILES
 	glip_glfw_server.h
+  glip_event_list.h
 )
 
 add_executable(glip_glfw_server ${SOURCE_FILES})

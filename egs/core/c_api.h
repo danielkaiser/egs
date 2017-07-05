@@ -21,6 +21,7 @@ typedef void *c_property;
 /* context */
 typedef struct egs_context_wrapper *egs_context_ref;
 typedef struct egs_gl_context_wrapper *egs_gl_context_ref;
+typedef struct egs_camera_movement_wrapper *egs_camera_movement_ref;
 
 /* iplugin */
 typedef struct egs_display_list_wrapper *egs_display_list_ref;
@@ -59,7 +60,6 @@ void egs_context_register_py_plugin_function(egs_context_ref ctx_ref, const char
 void egs_context_set_py_loader_fun(egs_context_ref, void (*)(egs_context_ref, const char *, const char *));
 void egs_context_set_property(egs_context_ref, const char *, void *, size_t);
 void *egs_context_get_property(egs_context_ref, const char *, void *, size_t);
-void egs_context_rotate(egs_context_ref, float x, float y, float z, float angle);
 egs_plugin_fun egs_context_get_plugin_func(egs_context_ref ctx, const char *plugin, const char *func);
 
 void egs_gl_context_set_property(egs_gl_context_ref, const char *, void *, size_t);
@@ -67,14 +67,24 @@ void *egs_gl_context_get_property(egs_gl_context_ref, const char *, void *, size
 egs_context_ref egs_gl_context_get_context(egs_gl_context_ref);
 int egs_gl_context_update(egs_gl_context_ref, egs_display_list_ref);
 
-/* gl_context */
+/* camera_movement_mixin */
+void egs_camera_movement_rotate(egs_camera_movement_ref ctx, float axis_x, float axis_y, float axis_z, float angle);
+void egs_camera_movement_translate(egs_camera_movement_ref ctx, float dir_x, float dir_y, float dir_z);
+void egs_camera_movement_zoom(egs_camera_movement_ref ctx, float f);
+void egs_camera_movement_set_perspective(egs_camera_movement_ref ctx, float fovy, float aspect, float znear, float zfar);
+void egs_camera_movement_look_at(egs_camera_movement_ref ctx,
+                                 float camera_position_x, float camera_position_y, float camera_position_z,
+                                 float camera_center_x, float camera_center_y, float camera_center_z,
+                                 float camera_up_x, float camera_up_y, float camera_up_z);
+
+/* glfw_context */
 typedef struct egs_glfw_context_wrapper *egs_glfw_context_ref;
 egs_glfw_context_ref egs_glfw_context_create(egs_context_ref ctx);
 void egs_glfw_context_destroy(egs_glfw_context_ref);
 
 /* glip_context */
 typedef struct egs_glip_glfw_context_wrapper *egs_glip_glfw_context_ref;
-egs_glip_glfw_context_ref egs_glip_glfw_context_create(egs_context_ref ctx);
+egs_glip_glfw_context_ref egs_glip_glfw_context_create(egs_context_ref ctx, int, int, int, int);
 void egs_glip_glfw_context_destroy(egs_glip_glfw_context_ref);
 
 /* offscreen context */

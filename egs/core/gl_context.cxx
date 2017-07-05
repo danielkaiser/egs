@@ -10,9 +10,7 @@ GLContext::GLContext(Context &_ctx): ctx(_ctx), CameraMovementMixin(*this) {
 
 GLContext::~GLContext() {
   //ctx.unregister_gl_context(std::shared_ptr<GLContext>(this));
-  for (std::function<void(GLContext &)> f : on_delete_handler) {
-    f(*this);
-  }
+  call_delete_handler();
 }
 
 void GLContext::register_on_delete_handler(const std::function<void(GLContext &)>& func) {
@@ -21,6 +19,13 @@ void GLContext::register_on_delete_handler(const std::function<void(GLContext &)
 
 void GLContext::unregister_on_delete_handler(const std::function<void(GLContext &)>& func) {
   on_delete_handler.erase(func);
+}
+
+void GLContext::call_delete_handler() {
+  for (std::function<void(GLContext &)> f : on_delete_handler) {
+    f(*this);
+  }
+  on_delete_handler.clear();
 }
 
 int GLContext::draw_png(std::string filename, int width, int height) {

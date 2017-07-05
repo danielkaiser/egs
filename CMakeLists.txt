@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1.3 FATAL_ERROR)
 
-set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+set(CMAKE_INSTALL_RPATH "@loader_path/../egs/lib")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules)
 

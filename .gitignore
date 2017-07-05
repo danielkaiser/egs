@@ -8,7 +8,6 @@
 .*
 egs.xcodeproj
 !.gitignore
-main
-glfw_context/glfw_context
-test/test
-test/c_test
+!.gitlab-ci.yml
+build
+thirdparty/build

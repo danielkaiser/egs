@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.1.3 FATAL_ERROR)
 
 project(egs_examples VERSION 0.0.1)
 
-
 add_executable(molecule_example_c molecule_example.c)
 target_link_libraries(molecule_example_c egs util)
 target_include_directories(molecule_example_c PRIVATE ${PROJECT_SOURCE_DIR}/../egs/core ${PROJECT_SOURCE_DIR}/../egs/plugins/molecule_plugin)
@@ -16,6 +15,11 @@ set_property(TARGET multiple_window_example PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET multiple_window_example PROPERTY CXX_EXTENSIONS OFF)
 install(TARGETS multiple_window_example DESTINATION egs/bin/examples)
 
+add_executable(multiple_window_example_c multiple_window_example.c)
+target_link_libraries(multiple_window_example_c egs util)
+target_include_directories(multiple_window_example_c PRIVATE ${PROJECT_SOURCE_DIR}/../egs/core ${PROJECT_SOURCE_DIR}/../egs/plugins/molecule_plugin)
+install(TARGETS multiple_window_example_c DESTINATION egs/bin/examples)
+
 add_executable(molecule_example_cxx molecule_example.cxx)
 target_link_libraries(molecule_example_cxx egs util)
 target_include_directories(molecule_example_cxx PRIVATE ${PROJECT_SOURCE_DIR}/../egs/core ${PROJECT_SOURCE_DIR}/../egs/plugins/molecule_plugin)
@@ -25,6 +29,7 @@ set_property(TARGET molecule_example_cxx PROPERTY CXX_EXTENSIONS OFF)
 install(TARGETS molecule_example_cxx DESTINATION egs/bin/examples)
 
 install(FILES molecule_example.py DESTINATION egs/bin/examples)
+install(FILES multiple_window_example.py DESTINATION egs/bin/examples)
 install(FILES h2o.xyz DESTINATION egs/bin/examples)
 
 

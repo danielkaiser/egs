@@ -13,7 +13,7 @@ else \
 	echo $(THIRDPARTY_CMAKE); \
 fi)
 EXTRA_CMAKE_FLAGS ?=
-EGS_INSTALL_PREFIX ?= /tmp
+EGS_INSTALL_PREFIX ?= /usr/local
 
 all: build/Makefile
 	cd build && $(MAKE)

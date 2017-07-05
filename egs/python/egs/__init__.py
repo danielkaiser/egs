@@ -55,6 +55,36 @@ class DisplayListElem(ctypes.Structure):
     _fields_ = []
 
 
+class CameraMovementMixin(ctypes.Structure):
+    _fields_ = []
+
+    def __init__(self):
+        super(CameraMovementMixin, self).__init__()
+        self._camera_movement_mixin_ref = None
+
+    def rotate(self, axis, angle):
+        if self._camera_movement_mixin_ref:
+            _egs.egs_camera_movement_rotate(self._camera_movement_mixin_ref, axis[0], axis[1], axis[2], angle)
+
+    def translate(self, translation_vector):
+        if self._camera_movement_mixin_ref:
+            _egs.egs_camera_movement_translate(self._camera_movement_mixin_ref, translation_vector[0], translation_vector[1], translation_vector[2])
+
+    def zoom(self, factor):
+        if self._camera_movement_mixin_ref:
+            _egs.egs_camera_movement_zoom(self._camera_movement_mixin_ref, factor)
+
+    def set_perspective(self, fovy, aspect, znear, zfar):
+        if self._camera_movement_mixin_ref:
+            _egs.egs_camera_movement_set_perspective(self._camera_movement_mixin_ref, fovy, aspect, znear, zfar)
+
+    def look_at(self, camera_position, camera_center, camera_up):
+        if self._camera_movement_mixin_ref:
+            _egs.egs_camera_movement_look_at(self._camera_movement_mixin_ref, camera_position[0], camera_position[1], camera_position[2],
+                                             camera_center[0], camera_center[1], camera_center[2],
+                                             camera_up[0], camera_up[1], camera_up[2])
+
+
 class SerializedDisplayListElem(ctypes.Structure):
     _fields_ = [("data_length", ctypes.c_size_t), ("data", ctypes.POINTER(ctypes.c_uint8))]
 
@@ -85,12 +115,13 @@ class DisplayList(ctypes.Structure):
         return self._dl_ref
 
 
-class Context(ctypes.Structure):
+class Context(CameraMovementMixin, ctypes.Structure):
     _fields_ = []
 
     def __init__(self):
         super(Context, self).__init__()
         self._ctx_ref = _egs.egs_context_create()
+        self._camera_movement_mixin_ref = self._ctx_ref
         _egs.egs_context_set_py_loader_fun(self._ctx_ref, _wrapped_loader_fun)
 
     def __del__(self):
@@ -99,9 +130,6 @@ class Context(ctypes.Structure):
 
     def load_plugin(self, plugin_name):
         _egs.egs_context_load_plugin(ctypes.cast(self._ctx_ref, ctypes.POINTER(Context)), plugin_name)
-
-    def rotate(self, axis, angle):
-        _egs.egs_context_rotate(self._ctx_ref, axis[0], axis[1], axis[2], angle)
 
     @staticmethod
     def load_plugin_ptr(ctx_ref, plugin_name):
@@ -149,7 +177,7 @@ class Context(ctypes.Structure):
         return self._ctx_ref
 
 
-class GLContext(ctypes.Structure):
+class GLContext(CameraMovementMixin, ctypes.Structure):
     _fields_ = []
 
     def set_vec4_property(self, name, value):
@@ -166,6 +194,7 @@ class GLFWContext(GLContext, ctypes.Structure):
     def __init__(self, context):
         super(GLFWContext, self).__init__()
         self._gl_ctx_ref = _egs.egs_glfw_context_create(context.context_ref)
+        self._camera_movement_mixin_ref = self._gl_ctx_ref
 
     def __del__(self):
         if self._gl_ctx_ref:
@@ -175,9 +204,10 @@ class GLFWContext(GLContext, ctypes.Structure):
 class GLIPGLFWContext(GLContext, ctypes.Structure):
     _fields_ = []
 
-    def __init__(self, context):
+    def __init__(self, context, size=[-1, -1], position=[-1, -1]):
         super(GLIPGLFWContext, self).__init__()
-        self._gl_ctx_ref = _egs.egs_glip_glfw_context_create(context.context_ref)
+        self._gl_ctx_ref = _egs.egs_glip_glfw_context_create(context.context_ref, size[0], size[1], position[0], position[1])
+        self._camera_movement_mixin_ref = self._gl_ctx_ref
 
     def __del__(self):
         if self._gl_ctx_ref:
@@ -190,6 +220,7 @@ class GLOffscreenRenderer(GLContext, ctypes.Structure):
     def __init__(self, context):
         super(GLOffscreenRenderer, self).__init__()
         self._gl_ctx_ref = _egs.egs_gloffscreen_context_create(context.context_ref)
+        self._camera_movement_mixin_ref = self._gl_ctx_ref
 
     def __del__(self):
         if self._gl_ctx_ref:
@@ -241,7 +272,7 @@ _egs.egs_glfw_context_create.restype = ctypes.POINTER(GLFWContext)
 _egs.egs_glfw_context_destroy.argtypes = [ctypes.POINTER(GLFWContext)]
 _egs.egs_glfw_context_destroy.restype = None
 
-_egs.egs_glip_glfw_context_create.argtypes = [ctypes.POINTER(Context)]
+_egs.egs_glip_glfw_context_create.argtypes = [ctypes.POINTER(Context), ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 _egs.egs_glip_glfw_context_create.restype = ctypes.POINTER(GLIPGLFWContext)
 _egs.egs_glip_glfw_context_destroy.argtypes = [ctypes.POINTER(GLIPGLFWContext)]
 _egs.egs_glip_glfw_context_destroy.restype = None
@@ -262,14 +293,26 @@ _egs_py_loader_fun = ctypes.CFUNCTYPE(None, ctypes.POINTER(GLContext), ctypes.c_
 _wrapped_loader_fun = _egs_py_loader_fun(_py_loader_callback)
 _egs.egs_context_set_py_loader_fun.argtypes = [ctypes.POINTER(Context), _egs_py_loader_fun]
 _egs.egs_context_set_py_loader_fun.restype = None
-_egs.egs_context_rotate.argtypes = [ctypes.POINTER(Context), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
-_egs.egs_context_rotate.restype = None
 _egs.egs_context_set_property.argtypes = [ctypes.POINTER(Context), ctypes.c_char_p, ctypes.c_void_p, ctypes.c_size_t]
 _egs.egs_context_set_property.restype = None
 _egs.egs_context_get_property.argtypes = [ctypes.POINTER(Context), ctypes.c_char_p, ctypes.c_void_p, ctypes.c_size_t]
 _egs.egs_context_get_property.restype = ctypes.c_void_p
 _egs.egs_context_register_py_plugin_function.argtypes = [ctypes.POINTER(Context), ctypes.c_char_p, ctypes.c_char_p, ctypes.c_void_p]
 _egs.egs_context_register_py_plugin_function.restype = None
+
+_egs.egs_camera_movement_rotate.argtypes = [ctypes.POINTER(CameraMovementMixin), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
+_egs.egs_camera_movement_rotate.restype = None
+_egs.egs_camera_movement_translate.argtypes = [ctypes.POINTER(CameraMovementMixin), ctypes.c_float, ctypes.c_float, ctypes.c_float]
+_egs.egs_camera_movement_translate.restype = None
+_egs.egs_camera_movement_zoom.argtypes = [ctypes.POINTER(CameraMovementMixin), ctypes.c_float]
+_egs.egs_camera_movement_zoom.restype = None
+_egs.egs_camera_movement_set_perspective.argtypes = [ctypes.POINTER(CameraMovementMixin), ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
+_egs.egs_camera_movement_set_perspective.restype = None
+_egs.egs_camera_movement_look_at.argtypes = [ctypes.POINTER(CameraMovementMixin),
+                                             ctypes.c_float, ctypes.c_float, ctypes.c_float,
+                                             ctypes.c_float, ctypes.c_float, ctypes.c_float,
+                                             ctypes.c_float, ctypes.c_float, ctypes.c_float]
+_egs.egs_camera_movement_look_at.restype = None
 
 _egs.egs_gl_context_update.argtypes = [ctypes.POINTER(GLContext), ctypes.POINTER(DisplayList)]
 _egs.egs_gl_context_update.restype = ctypes.c_int

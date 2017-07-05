@@ -9,13 +9,10 @@
 #ifndef C_WRAPPER_DLE_H
 #define C_WRAPPER_DLE_H
 
-#include <stdio.h>
-#include <stdint.h>
-
+#include <iostream>
 #include "context.hxx"
 #include "propertystore.hxx"
 
-#include <iostream>
 #include "displaylist.hxx"
 
 class CWrapper : public IDisplayListElement {

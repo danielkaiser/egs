@@ -25,6 +25,9 @@
 #endif
 
 Context::Context() : CameraMovementMixin(*this) {
+  if (!getenv("EGS_PATH")) {
+    setenv("EGS_PATH", "/usr/local/egs/lib", 0);
+  }
   set_property<egs_directional_light_t>("light::directional_light", InitialisedDirectionalLight());
   set_perspective(45.0, 1.0, 0.1, 200);
   glm::vec3 camera_position = {0, 0, 10};
@@ -336,7 +339,6 @@ egs_plugin_fun Context::load_plugin_function(const std::string &plugin_name, con
   void *fun_ptr;
   fun_ptr = dlsym(loaded_plugins[plugin_name], function_name.c_str());
   assert(fun_ptr);
-  std::cout<< fun_ptr <<std::endl;
   return (egs_plugin_fun)fun_ptr;
 }
 

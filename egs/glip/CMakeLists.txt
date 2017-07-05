@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.1.3 FATAL_ERROR)
 project(glip VERSION 0.0.1)
 
 if (GLIP_DEBUG)
-	add_definitions(-DGLIP_DEBUG=1)
+	add_definitions(-DGLIPDEBUG=1)
 endif()
 
 set(SOURCE_FILES

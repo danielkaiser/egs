@@ -1,0 +1,61 @@
+Build (Ubuntu 16.04):
+   image: ubuntu:16.04
+   script:
+       - apt-get update
+       - apt-get install -y git clang make python2.7-dev cmake libgl1-mesa-dev xorg-dev
+       - make
+
+Build (Debian 8):
+   image: debian:8
+   script:
+       - apt-get update
+       - apt-get install -y git clang make python2.7-dev libgl1-mesa-dev xorg-dev
+       # Packages required for building the latest CMake version
+       - apt-get install -y curl libcurl4-openssl-dev zlib1g-dev
+       - make
+
+Build (CentOS 7):
+   image: centos:7
+   script:
+       - yum update -y
+       - yum install -y clang gcc gcc-c++ make mesa-libGL-devel which wget unzip tar libXrandr-devel libXinerama-devel libXi-devel libXcursor-devel python-devel cmake git
+       # Packages required for building the latest CMake version
+       - yum install -y curl libcurl-devel zlib-devel
+       - CC=clang CXX=clang++ make
+
+Build (Fedora 25):
+    image: fedora:25
+    script:
+        - dnf update -y
+        - dnf install -y gcc gcc-c++ make mesa-libGL-devel which wget unzip tar libXrandr-devel libXinerama-devel libXi-devel libXcursor-devel python-devel cmake git
+        # Packages required for building the latest CMake version
+        - dnf install -y curl libcurl-devel zlib-devel
+        - make
+
+Build (Fedora 24):
+    image: fedora:24
+    script:
+        - dnf update -y
+        - dnf install -y gcc gcc-c++ make mesa-libGL-devel which wget unzip tar libXrandr-devel libXinerama-devel libXi-devel libXcursor-devel python-devel cmake git
+        # Packages required for building the latest CMake version
+        - dnf install -y curl libcurl-devel zlib-devel
+        - make
+
+Build (Fedora 23):
+    image: fedora:23
+    script:
+        - dnf update -y
+        - dnf install -y gcc gcc-c++ make mesa-libGL-devel which wget unzip tar libXrandr-devel libXinerama-devel libXi-devel libXcursor-devel python-devel cmake git
+        # Packages required for building the latest CMake version
+        - dnf install -y curl libcurl-devel zlib-devel
+        - make
+
+Build (Fedora 22):
+    image: fedora:22
+    script:
+        - dnf update -y
+        - dnf install -y gcc gcc-c++ make mesa-libGL-devel which wget unzip tar libXrandr-devel libXinerama-devel libXi-devel libXcursor-devel python-devel cmake git
+        # Packages required for building the latest CMake version
+        - dnf install -y curl libcurl-devel zlib-devel
+        - make
+

@@ -1,4 +1,5 @@
 #include "egs.h"
+#include "glip_glfw_context.hxx"
 #include "molecule_plugin.h"
 #include <functional>
 #include <vector>
@@ -6,11 +7,11 @@
 
 int main(void) {
   Context ctx;
-  std::vector<std::shared_ptr<GLFWContext>> gl_ctx {
-    std::make_shared<GLFWContext>(ctx, 200, 200, 200, 100),
-    std::make_shared<GLFWContext>(ctx, 200, 200, 200, 300),
-    std::make_shared<GLFWContext>(ctx, 200, 200, 200, 500),
-    std::make_shared<GLFWContext>(ctx, 600, 600, 400, 100)
+  std::vector<std::shared_ptr<GLIPGLFWContext>> gl_ctx {
+    std::make_shared<GLIPGLFWContext>(ctx, 200, 200, 200, 100),
+    std::make_shared<GLIPGLFWContext>(ctx, 200, 200, 200, 300),
+    std::make_shared<GLIPGLFWContext>(ctx, 200, 200, 200, 500),
+    std::make_shared<GLIPGLFWContext>(ctx, 600, 600, 400, 100)
   };
   auto display_list = std::make_shared<DisplayList>();
 
@@ -26,7 +27,7 @@ int main(void) {
 
   display_list->add(molecule_plugin_create_molecule(ctx, "h2o.xyz"));
 
-  while (std::any_of(gl_ctx.begin(), gl_ctx.end(), [] (std::shared_ptr<GLFWContext> ctx) {return ctx!=nullptr;})) {
+  while (std::any_of(gl_ctx.begin(), gl_ctx.end(), [] (std::shared_ptr<GLIPGLFWContext> ctx) {return ctx!=nullptr;})) {
     for (auto &ctx : gl_ctx) {
       if (ctx && !ctx->update(display_list)) {
         ctx = nullptr;

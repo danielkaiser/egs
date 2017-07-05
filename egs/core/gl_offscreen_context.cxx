@@ -95,15 +95,10 @@ GLOffscreenRenderer::GLOffscreenRenderer(Context &ctx) : GLContext(ctx) {
   }
 
 #endif
-  /*if (!gladLoadGL()) {
-    std::cerr << "hmm..." << std::endl;
-  }*/
   glip_context_t *glip_ctx = glip_init_gl();
   assert(glip_ctx);
   glip_set_current_context(glip_ctx);
 
-  std::cerr << glGetString(GL_VERSION) << std::endl;
-  std::cerr << glGetError() << std::endl;
   width = 500;
   height = 500;
   glViewport(0, 0, width, height);
